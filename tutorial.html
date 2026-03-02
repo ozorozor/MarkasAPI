@@ -1,0 +1,1996 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📚 Tutorial API Lengkap - Lapangan Booking System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.8em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 50px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 25px;
+            font-size: 2em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+        }
+
+        .endpoint {
+            background: white;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            border-left: 5px solid #764ba2;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .endpoint h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        .endpoint-meta {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .method {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: white;
+            font-size: 0.9em;
+            font-family: 'Courier New', monospace;
+        }
+
+        .method.get { background: #61affe; }
+        .method.post { background: #49cc90; }
+        .method.patch { background: #fca130; }
+        .method.delete { background: #f93e3e; }
+
+        .url {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 12px 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            flex-grow: 1;
+            font-size: 0.95em;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .badge.public { background: #27ae60; color: white; }
+        .badge.protected { background: #f39c12; color: white; }
+        .badge.admin { background: #e74c3c; color: white; }
+
+        .description {
+            color: #555;
+            margin-bottom: 20px;
+            line-height: 1.8;
+            font-size: 0.95em;
+        }
+
+        .params-section {
+            margin: 25px 0;
+        }
+
+        .params-title {
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 12px;
+            font-size: 1.05em;
+            color: #667eea;
+        }
+
+        .params-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .params-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .params-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .params-table tr:hover {
+            background: #f5f5f5;
+        }
+
+        .params-table code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #e74c3c;
+        }
+
+        .required { color: #e74c3c; font-weight: bold; }
+        .optional { color: #27ae60; font-weight: bold; }
+
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 18px;
+            border-radius: 6px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .code-label {
+            color: #667eea;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .success {
+            background: #d4edda;
+            border-left: 5px solid #28a745;
+            color: #155724;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+
+        .error {
+            background: #f8d7da;
+            border-left: 5px solid #dc3545;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+
+        .info {
+            background: #d1ecf1;
+            border-left: 5px solid #17a2b8;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+
+        .toc {
+            background: #f0f0f0;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+            border: 2px solid #667eea;
+        }
+
+        .toc h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .toc ul {
+            list-style: none;
+            columns: 2;
+            gap: 30px;
+        }
+
+        .toc li {
+            margin: 12px 0;
+            padding: 8px 0;
+        }
+
+        .toc a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .toc a:hover {
+            color: #764ba2;
+            padding-left: 10px;
+        }
+
+        .endpoint-example {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 3px solid #764ba2;
+        }
+
+        .example-title {
+            color: #764ba2;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        footer {
+            background: #2c3e50;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .flow-item {
+            background: #667eea;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .flow-arrow {
+            font-size: 2em;
+            color: #667eea;
+        }
+
+        .highlight-code {
+            background: #fffacd;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d32f2f;
+        }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 1.8em; }
+            .content { padding: 20px; }
+            .toc ul { columns: 1; }
+            .endpoint-meta { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Tutorial API Lengkap</h1>
+            <p>Lapangan Booking System - Dokumentasi Semua Endpoint & Parameter</p>
+        </header>
+
+        <div class="content">
+            <!-- TABLE OF CONTENTS -->
+            <div class="toc">
+                <h2>📋 Daftar Isi</h2>
+                <ul>
+                    <li><a href="#intro">🎯 Pendahuluan</a></li>
+                    <li><a href="#auth">🔐 Authentication</a></li>
+                    <li><a href="#lapangan">🏟️ Lapangan Endpoints</a></li>
+                    <li><a href="#booking">📅 Booking Endpoints</a></li>
+                    <li><a href="#setup">⚙️ Setup & Testing</a></li>
+                    <li><a href="#status">📊 Status Codes</a></li>
+                </ul>
+            </div>
+
+            <!-- ========== INTRO ========== -->
+            <section class="section" id="intro">
+                <h2>🎯 Pendahuluan & Informasi Umum</h2>
+
+                <div class="endpoint">
+                    <h3>Base URL</h3>
+                    <div class="code-block">http://localhost:5000/api</div>
+                    <p class="description">Semua request dikirim ke base URL ini</p>
+                </div>
+
+                <div class="endpoint">
+                    <h3>Response Format</h3>
+                    <div class="code-label">✅ Success Response:</div>
+                    <div class="success">
+                        <div class="code-block">{
+  "status": "success",
+  "message": "Deskripsi sukses (optional)",
+  "data": { /* Data yang diminta */ }
+}</div>
+                    </div>
+
+                    <div class="code-label">❌ Error Response:</div>
+                    <div class="error">
+                        <div class="code-block">{
+  "status": "error",
+  "message": "Deskripsi error",
+  "errors": [
+    {
+      "field": "field_name",
+      "message": "Penjelasan error untuk field ini"
+    }
+  ],
+  "status_code": 400
+}</div>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <h3>Content Type</h3>
+                    <p class="description">Semua request harus menggunakan header:</p>
+                    <div class="code-block">Content-Type: application/json</div>
+                </div>
+
+                <div class="endpoint">
+                    <h3>Authentication</h3>
+                    <p class="description">Endpoint yang memerlukan authentication harus include header Authorization dengan JWT token:</p>
+                    <div class="code-block">Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
+                    <p style="margin-top: 15px;">Token didapatkan dari endpoint <span class="highlight-code">/api/auth/register</span> atau <span class="highlight-code">/api/auth/login</span></p>
+                </div>
+            </section>
+
+            <!-- ========== AUTHENTICATION ========== -->
+            <section class="section" id="auth">
+                <h2>🔐 Authentication Endpoints</h2>
+
+                <!-- REGISTER -->
+                <div class="endpoint">
+                    <h3>1️⃣ Register User</h3>
+                    <div class="endpoint-meta">
+                        <span class="method post">POST</span>
+                        <span class="url">/api/auth/register</span>
+                        <span class="badge public">Public</span>
+                    </div>
+
+                    <p class="description">Mendaftarkan user baru di sistem. Setelah registrasi, user langsung mendapat token yang dapat digunakan untuk akses endpoint protected.</p>
+
+                    <div class="params-section">
+                        <div class="params-title">📥 Request Body Parameters</div>
+                        <table class="params-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Tipe Data</th>
+                                    <th>Status</th>
+                                    <th>Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>nama</code></td>
+                                    <td>String</td>
+                                    <td><span class="required">Required</span></td>
+                                    <td>Nama lengkap user (minimum 3 karakter, maksimum 100 karakter)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>email</code></td>
+                                    <td>String</td>
+                                    <td><span class="required">Required</span></td>
+                                    <td>Email user (format email valid, harus unik/belum terdaftar)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>password</code></td>
+                                    <td>String</td>
+                                    <td><span class="required">Required</span></td>
+                                    <td>Password (minimum 6 karakter, akan di-hash dengan bcryptjs)</td>
+                                </tr>
+                                                                <tr>
+                                                                        <td><code>role</code></td>
+                                                                        <td>String</td>
+                                                                        <td><span class="optional">Optional</span></td>
+                                                                        <td>Tidak perlu dikirim. Server otomatis meng-assign role <strong>'user'</strong> saat registrasi.</td>
+                                                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                                        <div class="endpoint-example">
+                                                <div class="example-title">📤 Contoh Request (Register biasa — role tidak dikirim):</div>
+                                                <div class="code-block">POST /api/auth/register
+Content-Type: application/json
+
+{
+    "nama": "John Doe",
+    "email": "john@example.com",
+    "password": "SecurePassword123"
+}</div>
+                                        </div>
+
+                    <div class="code-label">✅ Contoh Response Success (201 Created):</div>
+                    <div class="success">
+                        <div class="code-block">{
+  "status": "success",
+  "message": "User registered successfully",
+  "data": {
+    "id_user": "550e8400-e29b-41d4-a716-446655440000",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU1MGU4NDAwLWUyOWItNDFkNC1hNzE2LTQ0NjY1NTQ0MDAwMCIsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+    "nama": "John Doe",
+    "email": "john@example.com",
+    "role": "user",
+    "created_at": "2024-01-15T10:30:00.000Z"
+  }
+}</div>
+                    </div>
+
+                    <div class="code-label">❌ Contoh Response Error:</div>
+                    <div class="error">
+                        <div class="code-block">// Error: Email sudah terdaftar
+{
+  "status": "error",
+  "message": "Validation failed",
+  "errors": [
+    {
+      "field": "email",
+      "message": "Email already registered"
+    }
+  ],
+  "status_code": 400
+}
+
+// Error: Password terlalu pendek
+{
+  "status": "error",
+  "message": "Validation failed",
+  "errors": [
+    {
+      "field": "password",
+      "message": "Password minimal 6 karakter"
+    }
+  ],
+  "status_code": 400
+}
+
+// Error: Nama terlalu pendek
+{
+  "status": "error",
+  "message": "Validation failed",
+  "errors": [
+    {
+      "field": "nama",
+      "message": "Nama minimal 3 karakter"
+    }
+  ],
+  "status_code": 400
+}</div>
+                    </div>
+
+                    <div class="info">
+                        <strong>💡 Catatan Penting:</strong> Token yang dikembalikan sudah dapat langsung digunakan untuk request endpoint lain yang memerlukan authentication. Simpan token ini di localStorage atau cookie untuk digunakan pada request berikutnya.
+                    </div>
+                </div>
+
+                <!-- LAPANGAN JAM STATUS (PER HOUR) -->
+                <div class="endpoint">
+                    <h3>🔢 Get Lapangan Per-Hour Status</h3>
+                    <div class="endpoint-meta">
+                        <span class="method get">GET</span>
+                        <span class="url">/api/lapangan/:id/status-jam?tanggal=YYYY-MM-DD</span>
+                        <span class="badge public">Public</span>
+                    </div>
+
+                    <p class="description">Mengambil daftar jam dari <strong>06:00</strong> sampai <strong>23:00</strong> untuk satu lapangan pada tanggal tertentu. Setiap item menunjukkan apakah jam tersebut <strong>TERBOOKING</strong> atau <strong>FREE</strong>.</p>
+
+                    <div class="params-section">
+                        <div class="params-title">🔎 URL & Query Parameters</div>
+                        <table class="params-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Tipe Data</th>
+                                    <th>Status</th>
+                                    <th>Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>id</code></td>
+                                    <td>UUID</td>
+                                    <td><span class="required">Required</span></td>
+                                    <td>ID lapangan pada path</td>
+                                </tr>
+                                <tr>
+                                    <td><code>tanggal</code></td>
+                                    <td>String (YYYY-MM-DD)</td>
+                                    <td><span class="required">Required</span></td>
+                                    <td>Tanggal yang ingin dicek (format: YYYY-MM-DD)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="endpoint-example">
+                        <div class="example-title">📤 Contoh Request:</div>
+                        <div class="code-block">GET /api/lapangan/550e8400-e29b-41d4-a716-446655440000/status-jam?tanggal=2026-02-24</div>
+                    </div>
+
+                    <div class="code-label">✅ Contoh Response Success (200 OK):</div>
+                    <div class="success">
+                        <div class="code-block">{
+  "success": true,
+  "message": "Status jam lapangan berhasil diambil",
+  "data": {
+    "id_lapangan": "550e8400-e29b-41d4-a716-446655440000",
+    "nama_lapangan": "Lapangan Badminton A",
+    "tanggal": "2026-02-24",
+    "harga_per_jam": 100000,
+    "jam_operasional": ["06:00","23:00"],
+    "status_jam": [
+      { "jam": "06:00", "status": "TERBOOKING" },
+      { "jam": "07:00", "status": "FREE" },
+      { "jam": "08:00", "status": "FREE" },
+      ...
+    ]
+  }
+}</div>
+                    </div>
+                </div>
+
+                <!-- LOGIN -->
+                <div class="endpoint">
+                    <h3>2️⃣ Login User</h3>
+                    <div class="endpoint-meta">
+                        <span class="method post">POST</span>
+                        <span class="url">/api/auth/login</span>
+                        <span class="badge public">Public</span>
+                    </div>
+
+                    <p class="description">Login menggunakan email dan password untuk mendapatkan JWT token yang akan digunakan untuk mengakses endpoint yang memerlukan authentication. Token valid selama 7 hari (bisa dikonfigurasi di .env).</p>
+
+                    <div class="params-section">
+                        <div class="params-title">📥 Request Body Parameters</div>
+                        <table class="params-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Tipe Data</th>
+                                    <th>Status</th>
+                                    <th>Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>email</code></td>
+                                    <td>String</td>
+                                    <td><span class="required">Required</span></td>
+                                    <td>Email yang sudah terdaftar di sistem</td>
+                                </tr>
+                                <tr>
+                                    <td><code>password</code></td>
+                                    <td>String</td>
+                                    <td><span class="required">Required</span></td>
+                                    <td>Password akun yang sesuai dengan email</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="endpoint-example">
+                        <div class="example-title">📤 Contoh Request:</div>
+                        <div class="code-block">POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "SecurePassword123"
+}</div>
+                    </div>
+
+                    <div class="code-label">✅ Contoh Response Success (200 OK):</div>
+                    <div class="success">
+                        <div class="code-block">{
+  "status": "success",
+  "message": "Login successful",
+  "data": {
+    "id_user": "550e8400-e29b-41d4-a716-446655440000",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "nama": "John Doe",
+    "email": "john@example.com",
+    "role": "user",
+    "token_expires_in": "7d"
+  }
+}</div>
+                    </div>
+
+                    <div class="code-label">❌ Contoh Response Error:</div>
+                    <div class="error">
+                        <div class="code-block">// Error: Email tidak ditemukan
+{
+  "status": "error",
+  "message": "Email not found",
+  "errors": [
+    {
+      "field": "email",
+      "message": "Email tidak terdaftar di sistem"
+    }
+  ],
+  "status_code": 404
+}
+
+// Error: Password salah
+{
+  "status": "error",
+  "message": "Invalid password",
+  "errors": [
+    {
+      "field": "password",
+      "message": "Password yang Anda masukkan salah"
+    }
+  ],
+  "status_code": 401
+}</div>
+                    </div>
+
+                    <div class="info">
+                        <strong>💡 Tips:</strong> Simpan token yang didapat di localStorage atau session storage. Token ini akan digunakan di semua request berikutnya yang memerlukan authentication.
+                    </div>
+                </div>
+
+                <!-- GET PROFILE -->
+                <div class="endpoint">
+                    <h3>3️⃣ Get User Profile</h3>
+                    <div class="endpoint-meta">
+                        <span class="method get">GET</span>
+                        <span class="url">/api/auth/profile</span>
+                        <span class="badge protected">Protected</span>
+                    </div>
+
+                    <p class="description">Mendapatkan informasi profil user yang sedang login. Endpoint ini memerlukan JWT token yang valid di header Authorization. Digunakan untuk menampilkan data user di frontend.</p>
+
+                    <div class="params-section">
+                        <div class="params-title">🔐 Header Requirements</div>
+                        <table class="params-table">
+                            <thead>
+                                <tr>
+                                    <th>Header</th>
+                                    <th>Nilai</th>
+                                    <th>Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>Authorization</code></td>
+                                    <td>Bearer &lt;TOKEN&gt;</td>
+                                    <td>JWT token yang didapat dari login atau register. Format: "Bearer " diikuti token string</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="endpoint-example">
+                        <div class="example-title">📤 Contoh Request:</div>
+                        <div class="code-block">GET /api/auth/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
+                    </div>
+
+                    <div class="code-label">✅ Contoh Response Success (200 OK):</div>
+                    <div class="success">
+                        <div class="code-block">{
+  "status": "success",
+  "data": {
+    "id_user": "550e8400-e29b-41d4-a716-446655440000",
+    "nama": "John Doe",
+    "email": "john@example.com",
+    "role": "user",
+    "created_at": "2024-01-15T10:30:00.000Z",
+    "updated_at": "2024-01-15T10:30:00.000Z"
+  }
+}</div>
+                    </div>
+
+                    <div class="code-label">❌ Contoh Response Error:</div>
+                    <div class="error">
+                        <div class="code-block">// Error: Token tidak valid atau expired
+{
+  "status": "error",
+  "message": "Invalid or expired token",
+  "errors": [
+    {
+      "field": "authorization",
+      "message": "Token sudah expired atau tidak valid"
+    }
+  ],
+  "status_code": 401
+}</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========== LAPANGAN ENDPOINTS ========== -->
+            <section class="section" id="lapangan">
+                <h2>🏟️ Lapangan Endpoints</h2>
+
+                <!-- GET ALL LAPANGAN -->
+                <div class="endpoint">
+                    <h3>4️⃣ Get All Lapangan</h3>
+                    <div class="endpoint-meta">
+                        <span class="method get">GET</span>
+                        <span class="url">/api/lapangan</span>
+                        <span class="badge public">Public</span>
+                    </div>
+
+                    <p class="description">Mendapatkan daftar lengkap semua lapangan yang tersedia di sistem. Endpoint ini bersifat public dan tidak memerlukan authentication. Berguna untuk menampilkan daftar lapangan di UI untuk user pilih.</p>
+
+                    <div class="endpoint-example">
+                        <div class="example-title">📤 Contoh Request:</div>
+                        <div class="code-block">GET /api/lapangan</div>
+                    </div>
+
+                    <div class="code-label">✅ Contoh Response Success (200 OK):</div>
+                    <div class="success">
+                        <div class="code-block">{
+  "status": "success",
+  "data": [
+    {
+      "id_lapangan": "550e8400-e29b-41d4-a716-446655440000",
+      "nama_lapangan": "Lapangan Badminton A",
+      "harga_per_jam": 100000,
+      "deskripsi": "Lapangan badminton indoor dengan standar internasional",
+      "created_at": "2024-01-15T08:00:00.000Z"
+    },
+    {
+      "id_lapangan": "550e8400-e29b-41d4-a716-446655440001",
+      "nama_lapangan": "Lapangan Voli B",
+      "harga_per_jam": 120000,
+      "deskripsi": "Lapangan voli outdoor dengan pasir premium",
+      "created_at": "2024-01-15T08:00:00.000Z"
+    },
+    {
+      "id_lapangan": "550e8400-e29b-41d4-a716-446655440002",
+      "nama_lapangan": "Lapangan Basketball C",
+      "harga_per_jam": 150000,
+      "deskripsi": "Lapangan basketball indoor profesional",
+      "created_at": "2024-01-15T08:00:00.000Z"
+    }
+  ]
+}</div>
+                    </div>
+                </div>
+
+                <!-- GET LAPANGAN BY ID -->
+                <div class="endpoint">
+                    <h3>5️⃣ Get Lapangan by ID</h3>
+                    <div class="endpoint-meta">
+                        <span class="method get">GET</span>
+                        <span class="url">/api/lapangan/:id_lapangan</span>
+                        <span class="badge public">Public</span>
+                    </div>
+
+                    <p class="description">Mendapatkan detail lengkap dari satu lapangan tertentu berdasarkan ID-nya. Berguna untuk menampilkan detail lapangan di halaman detail produk.</p>
+
+                    <div class="params-section">
+                        <div class="params-title">🔗 URL Path Parameters</div>
+                        <table class="params-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Tipe Data</th>
+                                    <th>Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>id_lapangan</code></td>
+                                    <td>String (UUID)</td>
+                                    <td>ID unik dari lapangan yang ingin diambil (format UUID)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="endpoint-example">
+                        <div class="example-title">📤 Contoh Request:</div>
+                        <div class="code-block">GET /api/lapangan/550e8400-e29b-41d4-a716-446655440000</div>
+                    </div>
+
+                    <div class="code-label">✅ Contoh Response Success (200 OK):</div>
+                    <div class="success">
+                        <div class="code-block">{
+  "status": "success",
+  "data": {
+    "id_lapangan": "550e8400-e29b-41d4-a716-446655440000",
+    "nama_lapangan": "Lapangan Badminton A",
+    "harga_per_jam": 100000,
+    "deskripsi": "Lapangan badminton indoor dengan standar internasional",
+    "created_at": "2024-01-15T08:00:00.000Z",
+    "updated_at": "2024-01-15T08:00:00.000Z"
+  }
+}</div>
+                    </div>
+
+                    <div class="code-label">❌ Contoh Response Error:</div>
+                    <div class="error">
+                        <div class="code-block">// Error: Lapangan tidak ditemukan
+{
+  "status": "error",
+  "message": "Lapangan not found",
+  "errors": [
+    {
+      "field": "id_lapangan",
+      "message": "Lapangan dengan ID tersebut tidak ditemukan di sistem"
+    }
+  ],
+  "status_code": 404
+}</div>
+                    </div>
+                </div>
+
+                <!-- CHECK AVAILABILITY -->
+                <div class="endpoint">
+                    <h3>6️⃣ Check Lapangan Availability</h3>
+                    <div class="endpoint-meta">
+                        <span class="method get">GET</span>
+                        <span class="url">/api/lapangan/availability/check</span>
+                        <span class="badge public">Public</span>
+                    </div>
+
+                    <p class="description">Mengecek ketersediaan (availability) semua lapangan pada tanggal tertentu. Menampilkan slot waktu yang masih available untuk setiap lapangan di hari tersebut.</p>
+
+                    <div class="params-section">
+                        <div class="params-title">🔍 Query Parameters</div>
+                        <table class="params-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Tipe Data</th>
+                                    <th>Status</th>
+                                    <th>Format/Contoh</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>tanggal</code></td>
+                                    <td>String</td>
+                                    <td><span class="required">Required</span></td>
+                                    <td>YYYY-MM-DD (contoh: 2024-01-20)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="endpoint-example">
+                        <div class="example-title">📤 Contoh Request:</div>
+                        <div class="code-block">GET /api/lapangan/availability/check?tanggal=2024-01-20</div>
+                    </div>
+
+                    <div class="code-label">✅ Contoh Response Success (200 OK):</div>
+                    <div class="success">
+                        <div class="code-block">{
+  "status": "success",
+  "data": [
+    {
+      "id_lapangan": "550e8400-e29b-41d4-a716-446655440000",
+      "nama_lapangan": "Lapangan Badminton A",
+      "harga_per_jam": 100000,
+      "available": true,
+      "available_slots": [
+        "06:00-07:00",
+        "07:00-08:00",
+        "08:00-09:00",
+        "14:00-15:00",
+        "15:00-16:00"
+      ],
+      "booked_slots": [
+        "09:00-11:00",
+        "11:00-13:00"
+      ]
+    },
+    {
+      "id_lapangan": "550e8400-e29b-41d4-a716-446655440001",
+      "nama_lapangan": "Lapangan Voli B",
+      "harga_per_jam": 120000,
+      "available": true,
+      "available_slots": [
+        "08:00-09:00",
+        "10:00-15:00",
+        "16:00-22:00"
+      ],
+      "booked_slots": [
+        "09:00-10:00"
+      ]
+    }
+  ]
+}</div>
+                    </div>
+                </div>
+
+                <!-- CREATE LAPANGAN -->
+                <div class="endpoint">
+                    <h3>7️⃣ Create Lapangan (Admin Only)</h3>
+                    <div class="endpoint-meta">
+                        <span class="method post">POST</span>
+                        <span class="url">/api/lapangan</span>
+                        <span class="badge admin">Admin Only</span>
+                    </div>
+
+                    <p class="description">Membuat lapangan baru di sistem. Hanya user dengan role "admin" yang dapat mengakses endpoint ini. Digunakan oleh admin untuk menambah lapangan baru.</p>
+
+                    <div class="params-section">
+                        <div class="params-title">🔐 Header Requirements</div>
+                        <table class="params-table">
+                            <thead>
+                                <tr>
+                                    <th>Header</th>
+                                    <th>Nilai</th>
+                                    <th>Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>Authorization</code></td>
+                                    <td>Bearer &lt;ADMIN_TOKEN&gt;</td>
+                                    <td>JWT token dari user dengan role admin</td>
+                                </tr>
+                                <tr>
+                                    <td><code>Content-Type</code></td>
+                                    <td>application/json</td>
+                                    <td>Format data yang dikirim</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="params-section">
+                        <div class="params-title">📥 Request Body Parameters</div>
+                        <table class="params-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Tipe Data</th>
+                                    <th>Status</th>
+                                    <th>Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>nama_lapangan</code></td>
+                                    <td>String</td>
+                                    <td><span class="required">Required</span></td>
+                                    <td>Nama lapangan (3-100 karakter)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>harga_per_jam</code></td>
+                                    <td>Number</td>
+                                    <td><span class="required">Required</span></td>
+                                    <td>Harga per jam (harus > 0, contoh: 100000)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>deskripsi</code></td>
+                                    <td>String</td>
+                                    <td><span class="optional">Optional</span></td>
+                                    <td>Deskripsi detail lapangan</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="endpoint-example">
+                        <div class="example-title">📤 Contoh Request:</div>
+                        <div class="code-block">POST /api/lapangan
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+
+{
+  "nama_lapangan": "Lapangan Basketball Court C",
+  "harga_per_jam": 150000,
+  "deskripsi": "Lapangan basketball indoor dengan standar profesional internasional"
+}</div>
+                    </div>
+
+                    <div class="code-label">✅ Contoh Response Success (201 Created):</div>
+                    <div class="success">
+                        <div class="code-block">{
+  "status": "success",
+  "message": "Lapangan created successfully",
+  "data": {
+    "id_lapangan": "550e8400-e29b-41d4-a716-446655440010",
+    "nama_lapangan": "Lapangan Basketball Court C",
+    "harga_per_jam": 150000,
+    "deskripsi": "Lapangan basketball indoor dengan standar profesional internasional",
+    "created_at": "2024-01-15T12:00:00.000Z"
+  }
+}
+</div>
+                    </div>
+
+                    <div class="code-label">❌ Contoh Response Error:</div>
+                    <div class="error">
+                        <div class="code-block">// Error: Tidak memiliki izin (bukan admin)
+{
+  "status": "error",
+  "message": "Unauthorized - Admin access required",
+  "status_code": 403
+}
+
+// Error: Validasi gagal
+{
+  "status": "error",
+  "message": "Validation failed",
+  "errors": [
+    {
+      "field": "harga_per_jam",
+      "message": "Harga per jam harus lebih dari 0"
+    }
+  ],
+  "status_code": 400
+}</div>
+                    </div>
+                </div>
+
+                <!-- UPDATE LAPANGAN -->
+                <div class="endpoint">
+                    <h3>8️⃣ Update Lapangan (Admin Only)</h3>
+                    <div class="endpoint-meta">
+                        <span class="method patch">PATCH</span>
+                        <span class="url">/api/lapangan/:id_lapangan</span>
+                        <span class="badge admin">Admin Only</span>
+                    </div>
+
+                    <p class="description">Update informasi lapangan yang sudah ada. Hanya admin yang bisa mengakses endpoint ini. Bisa update sebagian atau semua field.</p>
+
+                    <div class="params-section">
+                        <div class="params-title">🔗 URL Path Parameters</div>
+                        <table class="params-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Tipe Data</th>
+                                    <th>Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>id_lapangan</code></td>
+                                    <td>String (UUID)</td>
+                                    <td>ID lapangan yang akan diupdate</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="params-section">
+                        <div class="params-title">📥 Request Body Parameters (Semua Optional)</div>
+                        <table class="params-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Tipe Data</th>
+                                    <th>Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>nama_lapangan</code></td>
+                                    <td>String</td>
+                                    <td>Nama lapangan baru (jika ingin diubah)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>harga_per_jam</code></td>
+                                    <td>Number</td>
+                                    <td>Harga per jam baru</td>
+                                </tr>
+                                <tr>
+                                    <td><code>deskripsi</code></td>
+                                    <td>String</td>
+                                    <td>Deskripsi baru</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="endpoint-example">
+                        <div class="example-title">📤 Contoh Request (Update harga saja):</div>
+                        <div class="code-block">PATCH /api/lapangan/550e8400-e29b-41d4-a716-446655440000
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+
+{
+  "harga_per_jam": 120000,
+  "deskripsi": "Lapangan badminton dengan pencahayaan LED baru"
+}</div>
+                    </div>
+
+                    <div class="code-label">✅ Contoh Response Success (200 OK):</div>
+                    <div class="success">
+                        <div class="code-block">{
+  "status": "success",
+  "message": "Lapangan updated successfully",
+  "data": {
+    "id_lapangan": "550e8400-e29b-41d4-a716-446655440000",
+    "nama_lapangan": "Lapangan Badminton A",
+    "harga_per_jam": 120000,
+    "deskripsi": "Lapangan badminton dengan pencahayaan LED baru",
+    "updated_at": "2024-01-15T12:30:00.000Z"
+  }
+}</div>
+                    </div>
+                </div>
+
+                <!-- DELETE LAPANGAN -->
+                <div class="endpoint">
+                    <h3>9️⃣ Delete Lapangan (Admin Only)</h3>
+                    <div class="endpoint-meta">
+                        <span class="method delete">DELETE</span>
+                        <span class="url">/api/lapangan/:id_lapangan</span>
+                        <span class="badge admin">Admin Only</span>
+                    </div>
+
+                    <p class="description">Menghapus lapangan dari sistem. Hanya admin yang bisa melakukan aksi ini. Operasi ini bersifat permanent (tidak bisa di-undo).</p>
+
+                    <div class="params-section">
+                        <div class="params-title">🔗 URL Path Parameters</div>
+                        <table class="params-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Tipe Data</th>
+                                    <th>Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>id_lapangan</code></td>
+                                    <td>String (UUID)</td>
+                                    <td>ID lapangan yang akan dihapus</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="endpoint-example">
+                        <div class="example-title">📤 Contoh Request:</div>
+                        <div class="code-block">DELETE /api/lapangan/550e8400-e29b-41d4-a716-446655440000
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
+                    </div>
+
+                    <div class="code-label">✅ Contoh Response Success (200 OK):</div>
+                    <div class="success">
+                        <div class="code-block">{
+  "status": "success",
+  "message": "Lapangan deleted successfully"
+}</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========== BOOKING ENDPOINTS ========== -->
+            <section class="section" id="booking">
+                <h2>📅 Booking Endpoints</h2>
+
+                <!-- CREATE BOOKING -->
+                <div class="endpoint">
+                    <h3>🔟 Create Booking</h3>
+                    <div class="endpoint-meta">
+                        <span class="method post">POST</span>
+                        <span class="url">/api/booking</span>
+                        <span class="badge protected">Protected</span>
+                    </div>
+
+                    <p class="description">Membuat booking lapangan baru. User harus sudah login (memiliki token valid) untuk membuat booking. Status payment dimulai dari "pending" dengan deadline 15 menit untuk konfirmasi pembayaran.</p>
+
+                    <div class="params-section">
+                        <div class="params-title">📥 Request Body Parameters</div>
+                        <table class="params-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Tipe Data</th>
+                                    <th>Status</th>
+                                    <th>Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>id_lapangan</code></td>
+                                    <td>String (UUID)</td>
+                                    <td><span class="required">Required</span></td>
+                                    <td>ID lapangan yang ingin dibooking (dari endpoint GET /api/lapangan)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>tanggal</code></td>
+                                    <td>String</td>
+                                    <td><span class="required">Required</span></td>
+                                    <td>Tanggal booking (format: YYYY-MM-DD, contoh: 2024-01-20)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>jam_mulai</code></td>
+                                    <td>String</td>
+                                    <td><span class="required">Required</span></td>
+                                    <td>Jam mulai (format: HH:MM, 24 jam, contoh: 10:00)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>jam_selesai</code></td>
+                                    <td>String</td>
+                                    <td><span class="required">Required</span></td>
+                                    <td>Jam selesai (harus > jam_mulai, contoh: 12:00)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="endpoint-example">
+                        <div class="example-title">📤 Contoh Request:</div>
+                        <div class="code-block">POST /api/booking
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+
+{
+  "id_lapangan": "550e8400-e29b-41d4-a716-446655440000",
+  "tanggal": "2024-01-20",
+  "jam_mulai": "10:00",
+  "jam_selesai": "12:00"
+}</div>
+                    </div>
+
+                    <div class="code-label">✅ Contoh Response Success (201 Created):</div>
+                    <div class="success">
+                        <div class="code-block">{
+  "status": "success",
+  "message": "Booking created successfully",
+  "data": {
+    "id_booking": "550e8400-e29b-41d4-a716-446655440100",
+    "id_lapangan": "550e8400-e29b-41d4-a716-446655440000",
+    "id_user": "550e8400-e29b-41d4-a716-446655440001",
+    "tanggal": "2024-01-20",
+    "jam_mulai": "10:00",
+    "jam_selesai": "12:00",
+    "duration_jam": 2,
+    "total_harga": 200000,
+    "status_pembayaran": "pending",
+    "created_at": "2024-01-15T11:30:00.000Z",
+    "payment_deadline": "2024-01-15T11:45:00.000Z"
+  }
+}</div>
+                    </div>
+
+                    <div class="code-label">❌ Contoh Response Error:</div>
+                    <div class="error">
+                        <div class="code-block">// Error: Lapangan sudah dibooking pada jam tersebut
+{
+  "status": "error",
+  "message": "Lapangan not available for requested time",
+  "status_code": 409
+}
+
+// Error: Validasi gagal (jam_selesai tidak lebih besar dari jam_mulai)
+{
+  "status": "error",
+  "message": "Validation failed",
+  "errors": [
+    {
+      "field": "jam_selesai",
+      "message": "jam_selesai harus lebih besar dari jam_mulai"
+    }
+  ],
+  "status_code": 400
+}</div>
+                    </div>
+
+                    <div class="warning">
+                        <strong>⏰ Penting:</strong> User memiliki 15 menit untuk melakukan konfirmasi pembayaran. Jika tidak dikonfirmasi dalam waktu 15 menit, booking akan auto-expired dan lapangan akan tersedia kembali.
+                    </div>
+                </div>
+
+                <!-- GET USER BOOKINGS -->
+                <div class="endpoint">
+                    <h3>1️⃣1️⃣ Get User's Bookings</h3>
+                    <div class="endpoint-meta">
+                        <span class="method get">GET</span>
+                        <span class="url">/api/booking/user/my-bookings</span>
+                        <span class="badge protected">Protected</span>
+                    </div>
+
+                    <p class="description">Mendapatkan daftar semua booking milik user yang sedang login. Menampilkan booking aktif, expired, dan completed.</p>
+
+                    <div class="endpoint-example">
+                        <div class="example-title">📤 Contoh Request:</div>
+                        <div class="code-block">GET /api/booking/user/my-bookings
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
+                    </div>
+
+                    <div class="code-label">✅ Contoh Response Success (200 OK):</div>
+                    <div class="success">
+                        <div class="code-block">{
+  "status": "success",
+  "data": [
+    {
+      "id_booking": "550e8400-e29b-41d4-a716-446655440100",
+      "id_lapangan": "550e8400-e29b-41d4-a716-446655440000",
+      "lapangan": {
+        "nama_lapangan": "Lapangan Badminton A",
+        "harga_per_jam": 100000
+      },
+      "tanggal": "2024-01-20",
+      "jam_mulai": "10:00",
+      "jam_selesai": "12:00",
+      "total_harga": 200000,
+      "status_pembayaran": "confirmed",
+      "created_at": "2024-01-15T11:30:00.000Z"
+    }
+  ]
+}</div>
+                    </div>
+                </div>
+
+                <!-- GET BOOKING BY ID -->
+                <div class="endpoint">
+                    <h3>1️⃣2️⃣ Get Booking Detail</h3>
+                    <div class="endpoint-meta">
+                        <span class="method get">GET</span>
+                        <span class="url">/api/booking/:id_booking</span>
+                        <span class="badge protected">Protected</span>
+                    </div>
+
+                    <p class="description">Mendapatkan detail booking berdasarkan ID. User hanya bisa melihat booking milik mereka sendiri, admin bisa melihat semua booking.</p>
+
+                    <div class="params-section">
+                        <div class="params-title">🔗 URL Path Parameters</div>
+                        <table class="params-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Tipe Data</th>
+                                    <th>Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>id_booking</code></td>
+                                    <td>String (UUID)</td>
+                                    <td>ID booking yang ingin dilihat detailnya</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="endpoint-example">
+                        <div class="example-title">📤 Contoh Request:</div>
+                        <div class="code-block">GET /api/booking/550e8400-e29b-41d4-a716-446655440100
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
+                    </div>
+
+                    <div class="code-label">✅ Contoh Response Success (200 OK):</div>
+                    <div class="success">
+                        <div class="code-block">{
+  "status": "success",
+  "data": {
+    "id_booking": "550e8400-e29b-41d4-a716-446655440100",
+    "id_lapangan": "550e8400-e29b-41d4-a716-446655440000",
+    "id_user": "550e8400-e29b-41d4-a716-446655440001",
+    "lapangan": {
+      "nama_lapangan": "Lapangan Badminton A"
+    },
+    "user": {
+      "nama": "John Doe",
+      "email": "john@example.com"
+    },
+    "tanggal": "2024-01-20",
+    "jam_mulai": "10:00",
+    "jam_selesai": "12:00",
+    "duration_jam": 2,
+    "total_harga": 200000,
+    "status_pembayaran": "pending",
+    "payment_deadline": "2024-01-15T11:45:00.000Z"
+  }
+}</div>
+                    </div>
+                </div>
+
+                <!-- CONFIRM PAYMENT -->
+                <div class="endpoint">
+                    <h3>1️⃣3️⃣ Confirm Payment</h3>
+                    <div class="endpoint-meta">
+                        <span class="method patch">PATCH</span>
+                        <span class="url">/api/booking/:id_booking/confirm-payment</span>
+                        <span class="badge protected">Protected</span>
+                    </div>
+
+                    <p class="description">Mengkonfirmasi pembayaran untuk booking. HARUS dilakukan dalam 15 menit setelah booking dibuat. Jika tidak dikonfirmasi, booking otomatis expired.</p>
+
+                    <div class="params-section">
+                        <div class="params-title">🔗 URL Path Parameters</div>
+                        <table class="params-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Tipe Data</th>
+                                    <th>Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>id_booking</code></td>
+                                    <td>String (UUID)</td>
+                                    <td>ID booking yang akan dikonfirmasi pembayarannya</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="endpoint-example">
+                        <div class="example-title">📤 Contoh Request:</div>
+                        <div class="code-block">PATCH /api/booking/550e8400-e29b-41d4-a716-446655440100/confirm-payment
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
+                    </div>
+
+                    <div class="code-label">✅ Contoh Response Success (200 OK):</div>
+                    <div class="success">
+                        <div class="code-block">{
+  "status": "success",
+  "message": "Payment confirmed successfully",
+  "data": {
+    "id_booking": "550e8400-e29b-41d4-a716-446655440100",
+    "status_pembayaran": "confirmed",
+    "confirmed_at": "2024-01-15T11:35:00.000Z"
+  }
+}</div>
+                    </div>
+
+                    <div class="code-label">❌ Contoh Response Error:</div>
+                    <div class="error">
+                        <div class="code-block">// Error: Waktu pembayaran sudah melewati deadline
+{
+  "status": "error",
+  "message": "Payment deadline has passed",
+  "status_code": 400
+}
+
+// Error: Booking tidak ada atau sudah cancelled
+{
+  "status": "error",
+  "message": "Booking not found",
+  "status_code": 404
+}</div>
+                    </div>
+                </div>
+
+                <!-- CANCEL BOOKING -->
+                <div class="endpoint">
+                    <h3>1️⃣4️⃣ Cancel Booking</h3>
+                    <div class="endpoint-meta">
+                        <span class="method patch">PATCH</span>
+                        <span class="url">/api/booking/:id_booking/cancel</span>
+                        <span class="badge protected">Protected</span>
+                    </div>
+
+                    <p class="description">Membatalkan booking. User hanya bisa membatalkan booking milik mereka sendiri. Admin bisa membatalkan siapa saja. Lapangan akan menjadi available kembali.</p>
+
+                    <div class="params-section">
+                        <div class="params-title">🔗 URL Path Parameters</div>
+                        <table class="params-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Tipe Data</th>
+                                    <th>Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>id_booking</code></td>
+                                    <td>String (UUID)</td>
+                                    <td>ID booking yang akan dibatalkan</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="endpoint-example">
+                        <div class="example-title">📤 Contoh Request:</div>
+                        <div class="code-block">PATCH /api/booking/550e8400-e29b-41d4-a716-446655440100/cancel
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
+                    </div>
+
+                    <div class="code-label">✅ Contoh Response Success (200 OK):</div>
+                    <div class="success">
+                        <div class="code-block">{
+  "status": "success",
+  "message": "Booking cancelled successfully",
+  "data": {
+    "id_booking": "550e8400-e29b-41d4-a716-446655440100",
+    "status": "cancelled",
+    "cancelled_at": "2024-01-15T11:40:00.000Z"
+  }
+}</div>
+                    </div>
+                </div>
+
+                <!-- GET ALL BOOKINGS (ADMIN) -->
+                <div class="endpoint">
+                    <h3>1️⃣5️⃣ Get All Bookings (Admin Only)</h3>
+                    <div class="endpoint-meta">
+                        <span class="method get">GET</span>
+                        <span class="url">/api/booking</span>
+                        <span class="badge admin">Admin Only</span>
+                    </div>
+
+                    <p class="description">Mendapatkan daftar semua booking di sistem. Hanya bisa diakses oleh admin. Bisa difilter dengan query parameter untuk mencari booking tertentu.</p>
+
+                    <div class="params-section">
+                        <div class="params-title">🔍 Query Parameters (Optional)</div>
+                        <table class="params-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Tipe Data</th>
+                                    <th>Contoh</th>
+                                    <th>Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>status_pembayaran</code></td>
+                                    <td>String</td>
+                                    <td>pending / confirmed</td>
+                                    <td>Filter berdasarkan status pembayaran</td>
+                                </tr>
+                                <tr>
+                                    <td><code>tanggal</code></td>
+                                    <td>String</td>
+                                    <td>2024-01-20</td>
+                                    <td>Filter berdasarkan tanggal (format YYYY-MM-DD)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="endpoint-example">
+                        <div class="example-title">📤 Contoh Request (dengan filter):</div>
+                        <div class="code-block">GET /api/booking?status_pembayaran=pending&tanggal=2024-01-20
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
+                    </div>
+
+                    <div class="code-label">✅ Contoh Response Success (200 OK):</div>
+                    <div class="success">
+                        <div class="code-block">{
+  "status": "success",
+  "data": [
+    {
+      "id_booking": "550e8400-e29b-41d4-a716-446655440100",
+      "id_lapangan": "550e8400-e29b-41d4-a716-446655440000",
+      "id_user": "550e8400-e29b-41d4-a716-446655440001",
+      "lapangan": {
+        "nama_lapangan": "Lapangan Badminton A"
+      },
+      "user": {
+        "nama": "John Doe",
+        "email": "john@example.com"
+      },
+      "tanggal": "2024-01-20",
+      "jam_mulai": "10:00",
+      "jam_selesai": "12:00",
+      "total_harga": 200000,
+      "status_pembayaran": "pending",
+      "created_at": "2024-01-15T11:30:00.000Z"
+    }
+  ]
+}</div>
+                    </div>
+                </div>
+
+                <!-- CHECK EXPIRED BOOKINGS (ADMIN) -->
+                <div class="endpoint">
+                    <h3>1️⃣6️⃣ Check Expired Bookings (Admin Only)</h3>
+                    <div class="endpoint-meta">
+                        <span class="method post">POST</span>
+                        <span class="url">/api/booking/check-expired</span>
+                        <span class="badge admin">Admin Only</span>
+                    </div>
+
+                    <p class="description">Mengecek dan menandai booking yang sudah melewati deadline pembayaran (15 menit) sebagai expired. Endpoint ini untuk maintenance sistem, biasanya di-trigger secara otomatis atau manual oleh admin.</p>
+
+                    <div class="endpoint-example">
+                        <div class="example-title">📤 Contoh Request:</div>
+                        <div class="code-block">POST /api/booking/check-expired
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
+                    </div>
+
+                    <div class="code-label">✅ Contoh Response Success (200 OK):</div>
+                    <div class="success">
+                        <div class="code-block">{
+  "status": "success",
+  "message": "Expired bookings checked and updated",
+  "data": {
+    "expired_count": 3,
+    "expired_bookings": [
+      {
+        "id_booking": "550e8400-e29b-41d4-a716-446655440100",
+        "expired_at": "2024-01-15T11:45:00.000Z"
+      },
+      {
+        "id_booking": "550e8400-e29b-41d4-a716-446655440101",
+        "expired_at": "2024-01-15T12:00:00.000Z"
+      }
+    ]
+  }
+}</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========== SETUP & TESTING ========== -->
+            <section class="section" id="setup">
+                <h2>⚙️ Setup & Testing API</h2>
+
+                <div class="endpoint">
+                    <h3>🚀 Quick Start</h3>
+                    <div class="flow-diagram">
+                        <div class="flow-item">1. npm install</div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-item">2. Setup Database</div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-item">3. npm run seed</div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-item">4. npm run dev</div>
+                    </div>
+
+                    <h4>Step 1: Install Dependencies</h4>
+                    <div class="code-block">cd d:\pra-ta\api
+npm install</div>
+
+                    <h4>Step 2: Setup Database</h4>
+                    <div class="code-block">mysql -u root -p
+CREATE DATABASE lapangan_booking;
+EXIT;</div>
+
+                    <h4>Step 3: Configure .env</h4>
+                    <div class="code-block">cp .env.example .env
+
+// Edit .env file dengan credentials Anda:
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=lapangan_booking
+DB_PORT=3306
+PORT=5000
+NODE_ENV=development
+JWT_SECRET=your_super_secret_key_at_least_32_chars_long
+JWT_EXPIRE=7d
+PAYMENT_EXPIRY_MINUTES=15</div>
+
+                    <h4>Step 4: Initialize Database</h4>
+                    <div class="code-block">npm run seed
+
+// Expected output:
+// ✓ Connected to database
+// ✓ Database tables synced
+// ✓ Default admin user created
+//   Email: admin@lapangan.com
+//   Password: admin123
+// ✓ Sample lapangan created (4 items)
+// ✓ Database initialization completed!</div>
+
+                    <h4>Step 5: Start Server</h4>
+                    <div class="code-block">npm run dev
+
+// Expected output:
+// ✓ Database connection established
+// ✓ Database models synced
+// ✓ Server running on http://localhost:5000
+// ✓ Environment: development</div>
+
+                    <div class="success">
+                        <strong>✅ Server berhasil jalan!</strong> Buka browser ke <span class="highlight-code">http://localhost:5000/api/health</span> untuk verifikasi.
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <h3>🧪 Testing dengan Postman</h3>
+
+                    <h4>Import API dari File HTTP</h4>
+                    <ol style="margin-left: 20px; line-height: 2;">
+                        <li>Buka Postman → File → Import</li>
+                        <li>Pilih file <span class="highlight-code">API_EXAMPLES.http</span></li>
+                        <li>Semua endpoint akan ter-import dengan otomatis</li>
+                    </ol>
+
+                    <h4>Setup Environment Variables di Postman</h4>
+                    <div class="code-block">{
+  "BASE_URL": "http://localhost:5000/api",
+  "TOKEN": "eyJhbGciOiJIUzI1NiIs... (paste dari login)",
+  "LAPANGAN_ID": "550e8400-e29b-41d4-a716-446655440000",
+  "BOOKING_ID": "550e8400-e29b-41d4-a716-446655440100"
+}</div>
+
+                    <h4>Testing Flow Recommended</h4>
+                    <div style="background: #e8f4f8; padding: 15px; border-radius: 4px; margin: 15px 0; border-left: 4px solid #17a2b8;">
+                        <ol style="margin-left: 20px; line-height: 2;">
+                            <li><strong>POST /api/auth/login</strong> → dapatkan TOKEN</li>
+                            <li><strong>GET /api/lapangan</strong> → lihat daftar lapangan & catat ID-nya</li>
+                            <li><strong>GET /api/lapangan/availability/check?tanggal=2024-01-20</strong> → cek yang available</li>
+                            <li><strong>POST /api/booking</strong> → buat booking baru</li>
+                            <li><strong>PATCH /api/booking/{id}/confirm-payment</strong> → konfirmasi pembayaran</li>
+                            <li><strong>GET /api/booking/user/my-bookings</strong> → lihat booking milik user</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========== STATUS CODES ========== -->
+            <section class="section" id="status">
+                <h2>📊 HTTP Status & Response Codes</h2>
+
+                <div class="endpoint">
+                    <h3>HTTP Status Codes</h3>
+
+                    <table class="params-table">
+                        <thead>
+                            <tr>
+                                <th>Status Code</th>
+                                <th>Kategori</th>
+                                <th>Arti</th>
+                                <th>Contoh Kasus</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>200 OK</strong></td>
+                                <td>Success</td>
+                                <td>Request berhasil, response normal</td>
+                                <td>GET, PATCH, DELETE berhasil</td>
+                            </tr>
+                            <tr>
+                                <td><strong>201 Created</strong></td>
+                                <td>Success</td>
+                                <td>Resource baru berhasil dibuat</td>
+                                <td>POST register, create booking, create lapangan</td>
+                            </tr>
+                            <tr>
+                                <td><strong>400 Bad Request</strong></td>
+                                <td>Client Error</td>
+                                <td>Request tidak valid / parameter salah format</td>
+                                <td>Validation error, missing required field, invalid format</td>
+                            </tr>
+                            <tr>
+                                <td><strong>401 Unauthorized</strong></td>
+                                <td>Client Error</td>
+                                <td>Token tidak valid atau expired / tidak authenticated</td>
+                                <td>Token missing, token invalid, token expired</td>
+                            </tr>
+                            <tr>
+                                <td><strong>403 Forbidden</strong></td>
+                                <td>Client Error</td>
+                                <td>Tidak punya akses (bukan admin, dll)</td>
+                                <td>User biasa coba akses endpoint admin</td>
+                            </tr>
+                            <tr>
+                                <td><strong>404 Not Found</strong></td>
+                                <td>Client Error</td>
+                                <td>Resource tidak ditemukan</td>
+                                <td>Lapangan ID tidak ada, booking ID tidak ada, user tidak ada</td>
+                            </tr>
+                            <tr>
+                                <td><strong>409 Conflict</strong></td>
+                                <td>Client Error</td>
+                                <td>Conflict dengan data yang sudah ada</td>
+                                <td>Email sudah terdaftar, lapangan sudah dibooking di jam tersebut</td>
+                            </tr>
+                            <tr>
+                                <td><strong>500 Server Error</strong></td>
+                                <td>Server Error</td>
+                                <td>Error di server (unexpected)</td>
+                                <td>Database error, server crash, unexpected exception</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="endpoint">
+                    <h3>Payment Status Values</h3>
+
+                    <table class="params-table">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Deskripsi</th>
+                                <th>Action Tersedia</th>
+                                <th>Durasi/Deadline</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>"pending"</strong></td>
+                                <td>Booking baru, menunggu konfirmasi pembayaran</td>
+                                <td>Confirm Payment, Cancel</td>
+                                <td>15 menit untuk confirm</td>
+                            </tr>
+                            <tr>
+                                <td><strong>"confirmed"</strong></td>
+                                <td>Pembayaran sudah dikonfirmasi, booking valid</td>
+                                <td>Cancel</td>
+                                <td>Valid sampai booking time selesai</td>
+                            </tr>
+                            <tr>
+                                <td><strong>"expired"</strong></td>
+                                <td>Booking sudah expired (15 min passed tanpa confirm)</td>
+                                <td>-</td>
+                                <td>Status final (tidak bisa di-undo)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>"cancelled"</strong></td>
+                                <td>Booking dibatalkan oleh user atau admin</td>
+                                <td>-</td>
+                                <td>Status final (tidak bisa di-undo)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ========== TIPS & BEST PRACTICES ========== -->
+            <section class="section">
+                <h2>💡 Tips, Tricks & Best Practices</h2>
+
+                <div class="endpoint">
+                    <h3>🔐 Security Tips</h3>
+                    <ul style="margin-left: 20px; line-height: 2;">
+                        <li>Jangan hardcode API URL di kode - gunakan environment variables (.env)</li>
+                        <li>Simpan token JWT di localStorage atau secure cookie</li>
+                        <li>Validasi input di frontend sebelum kirim ke API</li>
+                        <li>Handle token expiry dengan cara re-login otomatis atau redirect ke login page</li>
+                        <li>Jangan log atau display token atau password di console</li>
+                        <li>Gunakan HTTPS di production (bukan HTTP)</li>
+                    </ul>
+                </div>
+
+                <div class="endpoint">
+                    <h3>🎯 Testing Tips</h3>
+                    <ul style="margin-left: 20px; line-height: 2;">
+                        <li>Test dengan Postman atau VS Code REST Client extension</li>
+                        <li>Gunakan environment variables untuk token & ID</li>
+                        <li>Test error cases juga (validation error, unauthorized, dll)</li>
+                        <li>Catat token & ID untuk reuse di request berikutnya</li>
+                        <li>Cek Network tab di browser DevTools untuk debugging</li>
+                    </ul>
+                </div>
+
+                <div class="endpoint">
+                    <h3>📱 Frontend Implementation Tips</h3>
+                    <ul style="margin-left: 20px; line-height: 2;">
+                        <li>Gunakan axios interceptor untuk auto-add Authorization header</li>
+                        <li>Handle loading state saat API request ongoing</li>
+                        <li>Display countdown timer saat booking pending payment</li>
+                        <li>Show user-friendly error messages dari API response</li>
+                        <li>Implement auto-retry untuk network error dengan exponential backoff</li>
+                    </ul>
+                </div>
+
+                <div class="endpoint">
+                    <h3>🛠️ Common Issues & Solutions</h3>
+
+                    <table class="params-table">
+                        <thead>
+                            <tr>
+                                <th>Issue</th>
+                                <th>Penyebab</th>
+                                <th>Solusi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>"Cannot connect to localhost:5000"</td>
+                                <td>Server tidak berjalan</td>
+                                <td>Jalankan <span class="highlight-code">npm run dev</span></td>
+                            </tr>
+                            <tr>
+                                <td>"DATABASE CONNECTION FAILED"</td>
+                                <td>Database belum dibuat atau config salah</td>
+                                <td>Check .env config dan jalankan <span class="highlight-code">npm run seed</span></td>
+                            </tr>
+                            <tr>
+                                <td>"Invalid or expired token"</td>
+                                <td>Token tidak valid atau sudah expired</td>
+                                <td>Login ulang dan gunakan token terbaru</td>
+                            </tr>
+                            <tr>
+                                <td>"Lapangan not available for requested time"</strong></td>
+                                <td>Lapangan sudah dibooking di jam tersebut</td>
+                                <td>Pilih jam atau lapangan lain</td>
+                            </tr>
+                            <tr>
+                                <td>"Unauthorized - Admin access required"</td>
+                                <td>User biasa coba akses endpoint admin</td>
+                                <td>Gunakan admin token atau login sebagai admin</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <footer>
+            <p><strong>📚 Tutorial API Lengkap - Lapangan Booking System</strong></p>
+            <p style="margin-top: 10px;">Untuk dokumentasi lebih lengkap, baca file README.md, QUICKSTART.md, dan FRONTEND_INTEGRATION.md</p>
+            <p style="margin-top: 15px; opacity: 0.8;">Base URL: <span class="highlight-code">http://localhost:5000/api</span></p>
+            <p style="margin-top: 10px; opacity: 0.7;">© 2026 Lapangan Booking API | Version 1.0.0</p>
+        </footer>
+    </div>
+</body>
+</html>

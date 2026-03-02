@@ -1,0 +1,260 @@
+// Contoh-contoh request untuk API testing
+// Bisa digunakan dengan Postman, curl, atau HTTP client lainnya
+
+// ===== AUTHENTICATION ENDPOINTS =====
+
+// 1. Register User
+// Parameters:
+//   - nama (string, required): 3-100 karakter
+//   - email (string, required): format email valid
+//   - password (string, required): minimal 6 karakter
+//   - role (string, optional): 'user' atau 'admin' (default: 'user')
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "nama": "John Doe",
+  "email": "john@example.com",
+  "password": "password123",
+  "role": "user"
+}
+
+###
+
+// 2. Register Admin
+// Parameters sama seperti #1, tapi dengan role: 'admin'
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "nama": "Admin User",
+  "email": "admin@example.com",
+  "password": "admin123",
+  "role": "admin"
+}
+
+###
+
+// Parameters:
+//   - email (string, required): email terdaftar
+//   - password (string, required): password akun
+// Response: { token: "JWT_TOKEN_HERE", user: {...} }
+// 3. Login
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+// Headers:
+//   - Authorization: "Bearer JWT_TOKEN" (required) - dari login/register
+GET http://localhost:5000/api/auth/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+// 4. Get Profile (gunakan token dari login/register)
+GET http://localhost:5000/api/auth/profile
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+// Query Parameters (optional):
+//   - Tidak ada parameter
+
+###
+
+// ===== LAPANGAN ENDPOINTS =====
+
+// 5. Get All Lapangan
+GET http://localhost:5000/api/lapangan
+// URL Parameters:
+//   - id_lapangan (string, required): UUID dari lapangan
+GET http://localhost:5000/api/lapangan/550e8400-e29b-41d4-a716-446655440000
+###
+
+// Query Parameters:
+//   - tanggal (string, required): format YYYY-MM-DD
+// 6. Get Lapangan by ID
+GET http://localhost:5000/api/lapangan/{id_lapangan}
+
+###
+
+// Headers:
+//   - Authorization: "Bearer ADMIN_JWT_TOKEN" (required)
+// Body Parameters:
+//   - nama_lapangan (string, required): 3-100 karakter
+//   - harga_per_jam (number, required): harga > 0
+//   - deskripsi (string, optional): deskripsi lapangan
+POST http://localhost:5000/api/lapangan
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...n/availability/check?tanggal=2024-01-15
+
+###
+
+// 8. Create Lapangan (Admin Only)
+POST http://localhost:5000/api/lapangan
+// URL Parameters:
+//   - id_lapangan (string, required): UUID
+// Headers:
+//   - Authorization: "Bearer ADMIN_JWT_TOKEN" (required)
+// Body Parameters (semua optional):
+//   - nama_lapangan (string): nama lapangan
+//   - harga_per_jam (number): harga per jam
+//   - deskripsi (string): deskripsi
+PATCH http://localhost:5000/api/lapangan/550e8400-e29b-41d4-a716-446655440000
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+{
+  "nama_lapangan": "Lapangan Voli E",
+  "harga_per_jam": 120000,
+// URL Parameters:
+//   - id_lapangan (string, required): UUID
+// Headers:
+//   - Authorization: "Bearer ADMIN_JWT_TOKEN" (required)
+DELETE http://localhost:5000/api/lapangan/550e8400-e29b-41d4-a716-446655440000
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+###
+// Headers:
+//   - Authorization: "Bearer USER_JWT_TOKEN" (required)
+// Body Parameters:
+//   - id_lapangan (string, required): UUID dari lapangan
+//   - tanggal (string, required): format YYYY-MM-DD
+//   - jam_mulai (string, required): format HH:MM (24 jam)
+//   - jam_selesai (string, required): format HH:MM, harus > jam_mulai
+POST http://localhost:5000/api/booking
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+
+{
+  "id_lapangan": "550e8400-e29b-41d4-a716-446655440000
+{
+  "nama_lapangan": "Lapangan Voli E Updated",
+  "harga_per_jam": 125000
+// Headers:
+//   - Authorization: "Bearer USER_JWT_TOKEN" (required)
+GET http://localhost:5000/api/booking/user/my-bookings
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+###
+
+// URL Parameters:
+//   - id_booking (string, required): UUID dari booking
+// Headers:
+//   - Authorization: "Bearer USER_JWT_TOKEN" (required)
+GET http://localhost:5000/api/booking/550e8400-e29b-41d4-a716-446655440001
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...angan/{id_lapangan}
+Authorization: Bearer ADMIN_JWT_TOKEN
+
+// URL Parameters:
+//   - id_booking (string, required): UUID dari booking
+// Headers:
+//   - Authorization: "Bearer USER_JWT_TOKEN" (required)
+PATCH http://localhost:5000/api/booking/550e8400-e29b-41d4-a716-446655440001/confirm-payment
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+// URL Parameters:
+//   - id_booking (string, required): UUID dari booking
+// Headers:
+//   - Authorization: "Bearer USER_JWT_TOKEN" (required)
+PATCH http://localhost:5000/api/booking/550e8400-e29b-41d4-a716-446655440001/cancel
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+// 11. Create Booking
+POST http://localhost:5000/api/booking
+Authorization: Bearer USER_JWT_TOKEN
+Content-Type: application/json
+
+{
+// Query Parameters (optional):
+//   - status_pembayaran (string): 'pending' atau 'confirmed'
+//   - tanggal (string): format YYYY-MM-DD
+// Headers:
+//   - Authorization: "Bearer ADMIN_JWT_TOKEN" (required)
+GET http://localhost:5000/api/booking?status_pembayaran=pending&tanggal=2024-01-15
+// Headers:
+//   - Authorization: "Bearer ADMIN_JWT_TOKEN" (required)
+POST http://localhost:5000/api/booking/check-expired
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+  "jam_selesai": "12:00"
+}
+
+###
+
+// 12. Get User's Bookings
+GET http://localhost:5000/api/booking/user/my-bookings
+Authorization: Bearer USER_JWT_TOKEN
+
+###
+
+// 13. Get Booking Detail
+GET http://localhost:5000/api/booking/{id_booking}
+Authorization: Bearer USER_JWT_TOKEN
+
+###
+
+// 14. Confirm Payment
+PATCH http://localhost:5000/api/booking/{id_booking}/confirm-payment
+Authorization: Bearer USER_JWT_TOKEN
+
+###
+
+// 15. Cancel Booking
+PATCH http://localhost:5000/api/booking/{id_booking}/cancel
+Authorization: Bearer USER_JWT_TOKEN
+
+###
+
+// 16. Get All Bookings (Admin Only)
+GET http://localhost:5000/api/booking?status_pembayaran=pending&tanggal=2024-01-15
+Authorization: Bearer ADMIN_JWT_TOKEN
+
+###
+
+// 17. Check Expired Bookings (Admin Only)
+POST http://localhost:5000/api/booking/check-expired
+Authorization: Bearer ADMIN_JWT_TOKEN
+
+###
+
+// ===== HEALTH CHECK =====
+
+// 18. Health Check
+// Endpoint untuk cek status server
+GET http://localhost:5000/api/health
+
+###
+
+// ===== PARAMETER VALIDATION RULES =====
+// 
+// AUTHENTICATION:
+//   register/login: 
+//     - nama: string, 3-100 karakter
+//     - email: string dengan format email valid
+//     - password: string, minimal 6 karakter
+//
+// LAPANGAN:
+//   create/update:
+//     - nama_lapangan: string, 3-100 karakter (required untuk create)
+//     - harga_per_jam: number positif, required untuk create
+//     - deskripsi: string, optional
+//
+// BOOKING:
+//   create:
+//     - id_lapangan: UUID string, required
+//     - tanggal: ISO date format (YYYY-MM-DD), required
+//     - jam_mulai: HH:MM 24 jam format, required
+//     - jam_selesai: HH:MM 24 jam format, required (harus > jam_mulai)
+//
+// ===== RESPONSE EXAMPLES =====
+//
+// Success Response Format:
+// {
+//   "status": "success",
+//   "message": "Pesan sukses",
+//   "data": { ... }
+// }
+//
+// Error Response Format:
+// {
+//   "status": "error",
+//   "message": "Pesan error",
+//   "errors": [ ... ]
+// }
+//
+// ===== AUTHENTICATION =====
+// Gunakan Bearer token dari response login/register di header Authorization
+// Format: Authorization: Bearer YOUR_JWT_TOKEN
