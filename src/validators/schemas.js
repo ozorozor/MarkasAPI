@@ -37,6 +37,10 @@ const lapanganSchema = Joi.object({
     'number.positive': 'Harga per jam harus lebih dari 0',
     'any.required': 'Harga per jam harus diisi'
   }),
+  diskon_persen: Joi.number().min(0).max(100).optional().messages({
+    'number.min': 'Diskon minimal 0%',
+    'number.max': 'Diskon maksimal 100%'
+  }),
   deskripsi: Joi.string().optional()
 });
 

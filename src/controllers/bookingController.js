@@ -84,8 +84,10 @@ const createBooking = async (req, res, next) => {
       });
     }
 
-    // Calculate total price
-    const totalHarga = parseFloat(lapangan.harga_per_jam) * duration;
+    // Calculate total price with discount from lapangan
+    const basePrice = parseFloat(lapangan.harga_per_jam) * duration;
+    const diskon = lapangan.diskon_persen ? Number(lapangan.diskon_persen) : 0;
+    const totalHarga = Number((basePrice * (100 - diskon) / 100).toFixed(2));
 
     // Set payment deadline (15 minutes from now)
     const batasPembayaran = new Date(Date.now() + 15 * 60 * 1000);
@@ -319,7 +321,7 @@ const cancelBooking = async (req, res, next) => {
 // Admin function - get all bookings
 const getAllBookings = async (req, res, next) => {
   try {
-    const { status_pembayaran, tanggal } = req.query;
+    const { status_pembayaran, tanggal, id_lapangan } = req.query;
     const where = {};
 
     if (status_pembayaran) {
@@ -331,6 +333,10 @@ const getAllBookings = async (req, res, next) => {
         [Op.gte]: new Date(tanggal),
         [Op.lt]: new Date(new Date(tanggal).getTime() + 24 * 60 * 60 * 1000)
       };
+    }
+
+    if (id_lapangan) {
+      where.id_lapangan = id_lapangan;
     }
 
     const bookings = await Booking.findAll({
@@ -401,6 +407,60 @@ const checkExpiredBookings = async (req, res, next) => {
   }
 };
 
+const getDailyRevenue = async (req, res, next) => {
+  try {
+    const { tanggal } = req.query;
+    const targetDate = tanggal ? new Date(tanggal) : new Date();
+
+    const startDate = new Date(targetDate);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
+
+    const bookings = await Booking.findAll({
+      where: {
+        tanggal: {
+          [Op.gte]: startDate,
+          [Op.lt]: endDate
+        },
+        status_pembayaran: 'paid'
+      },
+      include: [
+        {
+          model: Lapangan,
+          as: 'lapangan',
+          attributes: ['id_lapangan', 'nama_lapangan', 'harga_per_jam', 'diskon_persen']
+        }
+      ]
+    });
+
+    const totalRevenue = bookings.reduce((sum, b) => sum + parseFloat(b.total_harga), 0);
+
+    const perLapangan = {};
+    for (const b of bookings) {
+      const lid = b.id_lapangan;
+      const nama = b.lapangan?.nama_lapangan || 'Unknown';
+      if (!perLapangan[lid]) {
+        perLapangan[lid] = { id_lapangan: lid, nama_lapangan: nama, total_revenue: 0, bookings: 0 };
+      }
+      perLapangan[lid].total_revenue += parseFloat(b.total_harga);
+      perLapangan[lid].bookings += 1;
+    }
+
+    res.json({
+      success: true,
+      message: 'Pendapatan harian berhasil dihitung',
+      data: {
+        tanggal: startDate.toISOString().split('T')[0],
+        total_revenue: Number(totalRevenue.toFixed(2)),
+        total_bookings: bookings.length,
+        per_lapangan: Object.values(perLapangan)
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createBooking,
   getUserBookings,
@@ -408,5 +468,6 @@ module.exports = {
   confirmPayment,
   cancelBooking,
   getAllBookings,
+  getDailyRevenue,
   checkExpiredBookings
 };

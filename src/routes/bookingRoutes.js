@@ -21,6 +21,14 @@ router.post(
   bookingController.checkExpiredBookings
 );
 
+// Daily revenue - admin only
+router.get(
+  '/revenue/daily',
+  authenticateToken,
+  authorizeRole(['admin']),
+  bookingController.getDailyRevenue
+);
+
 // Create booking - authenticated users
 router.post(
   '/',

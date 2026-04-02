@@ -1047,6 +1047,12 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
                                     <td><span class="optional">Optional</span></td>
                                     <td>Deskripsi detail lapangan</td>
                                 </tr>
+                                <tr>
+                                    <td><code>diskon_persen</code></td>
+                                    <td>Number</td>
+                                    <td><span class="optional">Optional</span></td>
+                                    <td>Diskon persentase (0-100). Harga total booking dihitung setelah diskon.</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -1060,6 +1066,7 @@ Content-Type: application/json
 {
   "nama_lapangan": "Lapangan Basketball Court C",
   "harga_per_jam": 150000,
+  "diskon_persen": 15,
   "deskripsi": "Lapangan basketball indoor dengan standar profesional internasional"
 }</div>
                     </div>
@@ -1161,6 +1168,11 @@ Content-Type: application/json
                                     <td>String</td>
                                     <td>Deskripsi baru</td>
                                 </tr>
+                                <tr>
+                                    <td><code>diskon_persen</code></td>
+                                    <td>Number</td>
+                                    <td>Diskon persentase (0-100)</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -1173,6 +1185,7 @@ Content-Type: application/json
 
 {
   "harga_per_jam": 120000,
+  "diskon_persen": 20,
   "deskripsi": "Lapangan badminton dengan pencahayaan LED baru"
 }</div>
                     </div>
@@ -1243,6 +1256,67 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
             <!-- ========== BOOKING ENDPOINTS ========== -->
             <section class="section" id="booking">
                 <h2>📅 Booking Endpoints</h2>
+
+                <!-- DAILY REVENUE -->
+                <div class="endpoint">
+                    <h3>📈 Mendapatkan Pendapatan Harian (Admin Only)</h3>
+                    <div class="endpoint-meta">
+                        <span class="method get">GET</span>
+                        <span class="url">/api/booking/revenue/daily?tanggal=YYYY-MM-DD</span>
+                        <span class="badge admin">Admin Only</span>
+                    </div>
+
+                    <p class="description">Menghitung total pendapatan dari semua booking yang telah dibayar pada tanggal tertentu (default hari ini jika tidak diset). Termasuk total per lapangan.</p>
+
+                    <div class="params-section">
+                        <div class="params-title">🔎 Query Parameters</div>
+                        <table class="params-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Tipe Data</th>
+                                    <th>Status</th>
+                                    <th>Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>tanggal</code></td>
+                                    <td>String (YYYY-MM-DD)</td>
+                                    <td><span class="optional">Optional</span></td>
+                                    <td>Tanggal untuk menghitung pendapatan (default hari ini jika tanpa parameter)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="endpoint-example">
+                        <div class="example-title">📤 Contoh Request:</div>
+                        <div class="code-block">GET /api/booking/revenue/daily?tanggal=2026-02-24
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
+                    </div>
+
+                    <div class="code-label">✅ Contoh Response Success (200 OK):</div>
+                    <div class="success">
+                        <div class="code-block">{
+  "success": true,
+  "message": "Pendapatan harian berhasil dihitung",
+  "data": {
+    "tanggal": "2026-02-24",
+    "total_revenue": 700000,
+    "total_bookings": 3,
+    "per_lapangan": [
+      {
+        "id_lapangan": "550e8400-e29b-41d4-a716-446655440000",
+        "nama_lapangan": "Lapangan Badminton A",
+        "total_revenue": 520000,
+        "bookings": 2
+      }
+    ]
+  }
+}</div>
+                    </div>
+                </div>
 
                 <!-- CREATE BOOKING -->
                 <div class="endpoint">
@@ -1616,6 +1690,12 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
                                     <td>String</td>
                                     <td>2024-01-20</td>
                                     <td>Filter berdasarkan tanggal (format YYYY-MM-DD)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>id_lapangan</code></td>
+                                    <td>UUID</td>
+                                    <td>550e8400-e29b-41d4-a716-446655440000</td>
+                                    <td>Filter berdasarkan lapangan tertentu</td>
                                 </tr>
                             </tbody>
                         </table>

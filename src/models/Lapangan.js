@@ -32,6 +32,15 @@ const Lapangan = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true
     },
+    diskon_persen: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+      validate: {
+        min: 0,
+        max: 100
+      }
+    },
     created_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW

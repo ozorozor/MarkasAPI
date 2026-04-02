@@ -3,12 +3,13 @@ const { Op } = require('sequelize');
 
 const createLapangan = async (req, res, next) => {
   try {
-    const { nama_lapangan, harga_per_jam, deskripsi } = req.validatedBody;
+    const { nama_lapangan, harga_per_jam, deskripsi, diskon_persen = 0 } = req.validatedBody;
 
     const lapangan = await Lapangan.create({
       nama_lapangan,
       harga_per_jam,
       deskripsi,
+      diskon_persen,
       status: 'available'
     });
 
@@ -74,7 +75,7 @@ const getLapanganById = async (req, res, next) => {
 const updateLapangan = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { nama_lapangan, harga_per_jam, deskripsi, status } = req.body;
+    const { nama_lapangan, harga_per_jam, deskripsi, status, diskon_persen } = req.body;
 
     const lapangan = await Lapangan.findByPk(id);
 
@@ -87,6 +88,16 @@ const updateLapangan = async (req, res, next) => {
 
     if (nama_lapangan) lapangan.nama_lapangan = nama_lapangan;
     if (harga_per_jam) lapangan.harga_per_jam = harga_per_jam;
+    if (typeof diskon_persen !== 'undefined') {
+      const discountValue = Number(diskon_persen);
+      if (Number.isNaN(discountValue) || discountValue < 0 || discountValue > 100) {
+        return res.status(400).json({
+          success: false,
+          message: 'Diskon harus berupa angka antara 0 dan 100'
+        });
+      }
+      lapangan.diskon_persen = discountValue;
+    }
     if (deskripsi) lapangan.deskripsi = deskripsi;
     if (status && ['available', 'booked'].includes(status)) lapangan.status = status;
 
