@@ -1,13 +1,21 @@
 const { Lapangan, Booking } = require('../models');
 const { Op } = require('sequelize');
 
+// CREATE LAPANGAN
 const createLapangan = async (req, res, next) => {
   try {
-    const { nama_lapangan, harga_per_jam, deskripsi, diskon_persen = 0 } = req.validatedBody;
+    const {
+      nama_lapangan,
+      harga_pagi,
+      harga_malam,
+      deskripsi,
+      diskon_persen = 0
+    } = req.validatedBody;
 
     const lapangan = await Lapangan.create({
       nama_lapangan,
-      harga_per_jam,
+      harga_pagi,
+      harga_malam,
       deskripsi,
       diskon_persen,
       status: 'available'
@@ -23,15 +31,10 @@ const createLapangan = async (req, res, next) => {
   }
 };
 
+// GET ALL
 const getAllLapangan = async (req, res, next) => {
   try {
-    const lapangan = await Lapangan.findAll({
-      include: {
-        model: Booking,
-        as: 'bookings',
-        attributes: ['id_booking', 'tanggal', 'jam_mulai', 'jam_selesai', 'status_pembayaran']
-      }
-    });
+    const lapangan = await Lapangan.findAll();
 
     res.json({
       success: true,
@@ -43,17 +46,12 @@ const getAllLapangan = async (req, res, next) => {
   }
 };
 
+// GET BY ID
 const getLapanganById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const lapangan = await Lapangan.findByPk(id, {
-      include: {
-        model: Booking,
-        as: 'bookings',
-        attributes: ['id_booking', 'tanggal', 'jam_mulai', 'jam_selesai', 'status_pembayaran']
-      }
-    });
+    const lapangan = await Lapangan.findByPk(id);
 
     if (!lapangan) {
       return res.status(404).json({
@@ -72,10 +70,18 @@ const getLapanganById = async (req, res, next) => {
   }
 };
 
+// UPDATE
 const updateLapangan = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { nama_lapangan, harga_per_jam, deskripsi, status, diskon_persen } = req.body;
+    const {
+      nama_lapangan,
+      harga_pagi,
+      harga_malam,
+      deskripsi,
+      status,
+      diskon_persen
+    } = req.body;
 
     const lapangan = await Lapangan.findByPk(id);
 
@@ -87,19 +93,24 @@ const updateLapangan = async (req, res, next) => {
     }
 
     if (nama_lapangan) lapangan.nama_lapangan = nama_lapangan;
-    if (harga_per_jam) lapangan.harga_per_jam = harga_per_jam;
+    if (harga_pagi) lapangan.harga_pagi = harga_pagi;
+    if (harga_malam) lapangan.harga_malam = harga_malam;
+
     if (typeof diskon_persen !== 'undefined') {
-      const discountValue = Number(diskon_persen);
-      if (Number.isNaN(discountValue) || discountValue < 0 || discountValue > 100) {
+      const val = Number(diskon_persen);
+      if (isNaN(val) || val < 0 || val > 100) {
         return res.status(400).json({
           success: false,
-          message: 'Diskon harus berupa angka antara 0 dan 100'
+          message: 'Diskon harus 0-100'
         });
       }
-      lapangan.diskon_persen = discountValue;
+      lapangan.diskon_persen = val;
     }
+
     if (deskripsi) lapangan.deskripsi = deskripsi;
-    if (status && ['available', 'booked'].includes(status)) lapangan.status = status;
+    if (status && ['available', 'booked'].includes(status)) {
+      lapangan.status = status;
+    }
 
     await lapangan.save();
 
@@ -113,6 +124,7 @@ const updateLapangan = async (req, res, next) => {
   }
 };
 
+// DELETE
 const deleteLapangan = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -126,7 +138,6 @@ const deleteLapangan = async (req, res, next) => {
       });
     }
 
-    // Check apakah ada booking yang masih active
     const activeBooking = await Booking.findOne({
       where: {
         id_lapangan: id,
@@ -137,7 +148,7 @@ const deleteLapangan = async (req, res, next) => {
     if (activeBooking) {
       return res.status(400).json({
         success: false,
-        message: 'Tidak bisa menghapus lapangan karena ada booking yang belum selesai'
+        message: 'Masih ada booking aktif'
       });
     }
 
@@ -152,7 +163,82 @@ const deleteLapangan = async (req, res, next) => {
   }
 };
 
-// Get lapangan availability untuk tanggal tertentu
+// STATUS JAM (UPDATED)
+const getLapanganJamStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { tanggal } = req.query;
+
+    if (!tanggal) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tanggal wajib diisi'
+      });
+    }
+
+    const lapangan = await Lapangan.findByPk(id);
+    if (!lapangan) {
+      return res.status(404).json({
+        success: false,
+        message: 'Lapangan tidak ditemukan'
+      });
+    }
+
+    const bookings = await Booking.findAll({
+      where: {
+        id_lapangan: id,
+        tanggal: new Date(tanggal),
+        status_pembayaran: { [Op.in]: ['pending', 'paid'] }
+      }
+    });
+
+    const toMinutes = (t) => {
+      const [h, m] = t.split(':').map(Number);
+      return h * 60 + m;
+    };
+
+    const status_jam = [];
+
+    for (let h = 6; h <= 23; h++) {
+      const start = h * 60;
+      const end = (h + 1) * 60;
+
+      let booked = false;
+
+      for (const b of bookings) {
+        const bs = toMinutes(b.jam_mulai);
+        const be = toMinutes(b.jam_selesai);
+
+        if (bs < end && be > start) {
+          booked = true;
+          break;
+        }
+      }
+
+      status_jam.push({
+        jam: `${h.toString().padStart(2, '0')}:00`,
+        status: booked ? 'TERBOOKING' : 'FREE'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Status jam berhasil',
+      data: {
+        id_lapangan: lapangan.id_lapangan,
+        nama_lapangan: lapangan.nama_lapangan,
+        tanggal,
+        harga_pagi: lapangan.harga_pagi,
+        harga_malam: lapangan.harga_malam,
+        jam_operasional: ['06:00', '23:00'],
+        status_jam
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const getLapanganAvailability = async (req, res, next) => {
   try {
     const { tanggal } = req.query;
@@ -199,83 +285,5 @@ module.exports = {
   getLapanganAvailability
 };
 
-// New: status per jam (06:00 - 23:00) showing TERBOOKING or FREE
-const getLapanganJamStatus = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const { tanggal } = req.query;
-
-    if (!tanggal) {
-      return res.status(400).json({ success: false, message: 'Parameter tanggal harus diisi (format: YYYY-MM-DD)' });
-    }
-
-    const lapangan = await Lapangan.findByPk(id);
-    if (!lapangan) {
-      return res.status(404).json({ success: false, message: 'Lapangan tidak ditemukan' });
-    }
-
-    const startDate = new Date(tanggal);
-    const endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
-
-    const bookings = await Booking.findAll({
-      where: {
-        id_lapangan: id,
-        tanggal: {
-          [Op.gte]: startDate,
-          [Op.lt]: endDate
-        },
-        status_pembayaran: { [Op.in]: ['pending', 'paid'] }
-      },
-      attributes: ['jam_mulai', 'jam_selesai']
-    });
-
-    // Helper to convert time string to minutes since 00:00
-    const toMinutes = (timeStr) => {
-      const parts = timeStr.split(':');
-      const hh = parseInt(parts[0], 10) || 0;
-      const mm = parseInt(parts[1], 10) || 0;
-      return hh * 60 + mm;
-    };
-
-    const status_jam = [];
-    for (let h = 6; h <= 23; h++) {
-      const slotStart = h * 60;
-      const slotEnd = (h + 1) * 60;
-      let isBooked = false;
-
-      for (const b of bookings) {
-        const jm = (b.jam_mulai || '').toString().split(':').slice(0,2).join(':');
-        const js = (b.jam_selesai || '').toString().split(':').slice(0,2).join(':');
-        const bStart = toMinutes(jm);
-        const bEnd = toMinutes(js);
-
-        // Overlap check: bookingStart < slotEnd && bookingEnd > slotStart
-        if (bStart < slotEnd && bEnd > slotStart) {
-          isBooked = true;
-          break;
-        }
-      }
-
-      const label = (h < 10 ? '0' + h : h) + ':00';
-      status_jam.push({ jam: label, status: isBooked ? 'TERBOOKING' : 'FREE' });
-    }
-
-    res.json({
-      success: true,
-      message: 'Status jam lapangan berhasil diambil',
-      data: {
-        id_lapangan: lapangan.id_lapangan,
-        nama_lapangan: lapangan.nama_lapangan,
-        tanggal,
-        harga_per_jam: lapangan.harga_per_jam,
-        jam_operasional: ['06:00', '23:00'],
-        status_jam
-      }
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// export tambahan
+// New:
 module.exports.getLapanganJamStatus = getLapanganJamStatus;

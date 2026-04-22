@@ -16,7 +16,9 @@ const Lapangan = sequelize.define(
         notEmpty: true
       }
     },
-    harga_per_jam: {
+
+    // ✅ GANTI INI
+    harga_pagi: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
       validate: {
@@ -24,6 +26,15 @@ const Lapangan = sequelize.define(
         min: 0
       }
     },
+    harga_malam: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      validate: {
+        isDecimal: true,
+        min: 0
+      }
+    },
+
     status: {
       type: DataTypes.ENUM('available', 'booked'),
       defaultValue: 'available'

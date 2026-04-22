@@ -33,14 +33,22 @@ const lapanganSchema = Joi.object({
     'string.min': 'Nama lapangan minimal 3 karakter',
     'any.required': 'Nama lapangan harus diisi'
   }),
-  harga_per_jam: Joi.number().positive().required().messages({
-    'number.positive': 'Harga per jam harus lebih dari 0',
-    'any.required': 'Harga per jam harus diisi'
+
+  harga_pagi: Joi.number().positive().required().messages({
+    'number.positive': 'Harga pagi harus lebih dari 0',
+    'any.required': 'Harga pagi harus diisi'
   }),
+
+  harga_malam: Joi.number().positive().required().messages({
+    'number.positive': 'Harga malam harus lebih dari 0',
+    'any.required': 'Harga malam harus diisi'
+  }),
+
   diskon_persen: Joi.number().min(0).max(100).optional().messages({
     'number.min': 'Diskon minimal 0%',
     'number.max': 'Diskon maksimal 100%'
   }),
+
   deskripsi: Joi.string().optional()
 });
 

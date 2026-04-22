@@ -352,7 +352,20 @@
             <p>Lapangan Booking System - Dokumentasi Semua Endpoint & Parameter</p>
         </header>
 
-        <div class="content">
+        <div class="content">                    <h3>?? Update Terbaru (v2.1)</h3>
+                    <p><strong>Perubahan Struktur Pricing:</strong></p>
+                    <ul>
+                        <li><strong>Sebelumnya:</strong> Lapangan memiliki satu field <code>harga_per_jam</code></li>
+                        <li><strong>Sekarang:</strong> Lapangan memiliki dua field <code>harga_pagi</code> (06:00-11:59) dan <code>harga_malam</code> (12:00-23:59)</li>
+                        <li><strong>Benefit:</strong> Sistem dapat menerapkan pricing dinamis berdasarkan waktu booking</li>
+                        <li><strong>Perhitungan:</strong> Jika booking melewati boundary (12:00), harga akan dihitung proportionally:
+                            <ul>
+                                <li>Contoh: Booking 11:00-13:00 dengan harga_pagi=80.000 dan harga_malam=100.000</li>
+                                <li>Harga = (1 jam × 80.000) + (1 jam × 100.000) = 180.000</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <hr>
             <!-- TABLE OF CONTENTS -->
             <div class="toc">
                 <h2>ðŸ“‹ Daftar Isi</h2>
@@ -600,7 +613,7 @@ Content-Type: application/json
     "id_lapangan": "550e8400-e29b-41d4-a716-446655440000",
     "nama_lapangan": "Lapangan Badminton A",
     "tanggal": "2026-02-24",
-    "harga_per_jam": 100000,
+    "harga_pagi": 80000,`n    "harga_malam": 100000,
     "jam_operasional": ["06:00","23:00"],
     "status_jam": [
       { "jam": "06:00", "status": "TERBOOKING" },
@@ -811,21 +824,21 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
     {
       "id_lapangan": "550e8400-e29b-41d4-a716-446655440000",
       "nama_lapangan": "Lapangan Badminton A",
-      "harga_per_jam": 100000,
+      "harga_pagi": 80000,`n    "harga_malam": 100000,
       "deskripsi": "Lapangan badminton indoor dengan standar internasional",
       "created_at": "2024-01-15T08:00:00.000Z"
     },
     {
       "id_lapangan": "550e8400-e29b-41d4-a716-446655440001",
       "nama_lapangan": "Lapangan Voli B",
-      "harga_per_jam": 120000,
+      "harga_pagi": 100000,`n      "harga_malam": 120000,
       "deskripsi": "Lapangan voli outdoor dengan pasir premium",
       "created_at": "2024-01-15T08:00:00.000Z"
     },
     {
       "id_lapangan": "550e8400-e29b-41d4-a716-446655440002",
       "nama_lapangan": "Lapangan Basketball C",
-      "harga_per_jam": 150000,
+      "harga_pagi": 120000,`n      "harga_malam": 150000,
       "deskripsi": "Lapangan basketball indoor profesional",
       "created_at": "2024-01-15T08:00:00.000Z"
     }
@@ -877,7 +890,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
   "data": {
     "id_lapangan": "550e8400-e29b-41d4-a716-446655440000",
     "nama_lapangan": "Lapangan Badminton A",
-    "harga_per_jam": 100000,
+    "harga_pagi": 80000,`n    "harga_malam": 100000,
     "deskripsi": "Lapangan badminton indoor dengan standar internasional",
     "created_at": "2024-01-15T08:00:00.000Z",
     "updated_at": "2024-01-15T08:00:00.000Z"
@@ -948,7 +961,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
     {
       "id_lapangan": "550e8400-e29b-41d4-a716-446655440000",
       "nama_lapangan": "Lapangan Badminton A",
-      "harga_per_jam": 100000,
+      "harga_pagi": 80000,`n    "harga_malam": 100000,
       "available": true,
       "available_slots": [
         "06:00-07:00",
@@ -965,7 +978,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
     {
       "id_lapangan": "550e8400-e29b-41d4-a716-446655440001",
       "nama_lapangan": "Lapangan Voli B",
-      "harga_per_jam": 120000,
+      "harga_pagi": 100000,`n      "harga_malam": 120000,
       "available": true,
       "available_slots": [
         "08:00-09:00",
@@ -1036,7 +1049,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
                                     <td>Nama lapangan (3-100 karakter)</td>
                                 </tr>
                                 <tr>
-                                    <td><code>harga_per_jam</code></td>
+                                    <td><code>harga_pagi</code> dan <code>harga_malam</code></td>
                                     <td>Number</td>
                                     <td><span class="required">Required</span></td>
                                     <td>Harga per jam (harus > 0, contoh: 100000)</td>
@@ -1065,7 +1078,7 @@ Content-Type: application/json
 
 {
   "nama_lapangan": "Lapangan Basketball Court C",
-  "harga_per_jam": 150000,
+  "harga_pagi": 120000,`n      "harga_malam": 150000,
   "diskon_persen": 15,
   "deskripsi": "Lapangan basketball indoor dengan standar profesional internasional"
 }</div>
@@ -1079,7 +1092,7 @@ Content-Type: application/json
   "data": {
     "id_lapangan": "550e8400-e29b-41d4-a716-446655440010",
     "nama_lapangan": "Lapangan Basketball Court C",
-    "harga_per_jam": 150000,
+    "harga_pagi": 120000,`n      "harga_malam": 150000,
     "deskripsi": "Lapangan basketball indoor dengan standar profesional internasional",
     "created_at": "2024-01-15T12:00:00.000Z"
   }
@@ -1102,7 +1115,7 @@ Content-Type: application/json
   "message": "Validation failed",
   "errors": [
     {
-      "field": "harga_per_jam",
+      "field": "harga_pagi atau harga_malam",
       "message": "Harga per jam harus lebih dari 0"
     }
   ],
@@ -1159,7 +1172,7 @@ Content-Type: application/json
                                     <td>Nama lapangan baru (jika ingin diubah)</td>
                                 </tr>
                                 <tr>
-                                    <td><code>harga_per_jam</code></td>
+                                    <td><code>harga_pagi</code> dan <code>harga_malam</code></td>
                                     <td>Number</td>
                                     <td>Harga per jam baru</td>
                                 </tr>
@@ -1184,7 +1197,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 Content-Type: application/json
 
 {
-  "harga_per_jam": 120000,
+  "harga_pagi": 100000,`n      "harga_malam": 120000,
   "diskon_persen": 20,
   "deskripsi": "Lapangan badminton dengan pencahayaan LED baru"
 }</div>
@@ -1198,7 +1211,7 @@ Content-Type: application/json
   "data": {
     "id_lapangan": "550e8400-e29b-41d4-a716-446655440000",
     "nama_lapangan": "Lapangan Badminton A",
-    "harga_per_jam": 120000,
+    "harga_pagi": 100000,`n      "harga_malam": 120000,
     "deskripsi": "Lapangan badminton dengan pencahayaan LED baru",
     "updated_at": "2024-01-15T12:30:00.000Z"
   }
@@ -1459,7 +1472,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
       "id_lapangan": "550e8400-e29b-41d4-a716-446655440000",
       "lapangan": {
         "nama_lapangan": "Lapangan Badminton A",
-        "harga_per_jam": 100000
+        "harga_pagi": 80000,`n    "harga_malam": 100000
       },
       "tanggal": "2024-01-20",
       "jam_mulai": "10:00",
@@ -2074,3 +2087,9 @@ PAYMENT_EXPIRY_MINUTES=15</div>
     </div>
 </body>
 </html>
+
+
+
+
+
+
