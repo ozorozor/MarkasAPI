@@ -33,6 +33,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/lapangan', lapanganRoutes);
 app.use('/api/booking', bookingRoutes);
+app.use('/uploads', express.static('uploads'));
 
 // 404 handler
 app.use((req, res) => {

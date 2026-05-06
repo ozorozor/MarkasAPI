@@ -4,32 +4,11 @@ const bookingController = require('../controllers/bookingController');
 const validateRequest = require('../validators/validateRequest');
 const { bookingSchema } = require('../validators/schemas');
 const { authenticateToken, authorizeRole } = require('../middleware/authMiddleware');
+const upload = require('../middleware/uploadMiddleware');
 
-// Get all bookings - admin only
-router.get(
-  '/',
-  authenticateToken,
-  authorizeRole(['admin']),
-  bookingController.getAllBookings
-);
+// ================= USER =================
 
-// Check expired bookings - admin only
-router.post(
-  '/check-expired',
-  authenticateToken,
-  authorizeRole(['admin']),
-  bookingController.checkExpiredBookings
-);
-
-// Daily revenue - admin only
-router.get(
-  '/revenue/daily',
-  authenticateToken,
-  authorizeRole(['admin']),
-  bookingController.getDailyRevenue
-);
-
-// Create booking - authenticated users
+// Create booking
 router.post(
   '/',
   authenticateToken,
@@ -37,7 +16,15 @@ router.post(
   bookingController.createBooking
 );
 
-// Get user's bookings
+// Upload bukti pembayaran
+router.post(
+  '/:id/upload-bukti',
+  authenticateToken,
+  upload.single('bukti'),
+  bookingController.uploadBukti
+);
+
+// Get booking sendiri
 router.get(
   '/user/my-bookings',
   authenticateToken,
@@ -51,18 +38,30 @@ router.get(
   bookingController.getBookingById
 );
 
-// Confirm payment
-router.patch(
-  '/:id/confirm-payment',
+// ================= ADMIN =================
+
+// Get semua booking
+router.get(
+  '/',
   authenticateToken,
-  bookingController.confirmPayment
+  authorizeRole(['admin']),
+  bookingController.getAllBookings
 );
 
-// Cancel booking
+// Confirm booking
 router.patch(
-  '/:id/cancel',
+  '/:id/admin-confirm',
   authenticateToken,
-  bookingController.cancelBooking
+  authorizeRole(['admin']),
+  bookingController.confirmByAdmin
+);
+
+// Reject booking
+router.patch(
+  '/:id/reject',
+  authenticateToken,
+  authorizeRole(['admin']),
+  bookingController.rejectBooking
 );
 
 module.exports = router;

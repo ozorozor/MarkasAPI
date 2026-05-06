@@ -11,6 +11,7 @@ const Booking = sequelize.define(
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true
     },
+
     id_user: {
       type: DataTypes.UUID,
       allowNull: false,
@@ -19,6 +20,7 @@ const Booking = sequelize.define(
         key: 'id_user'
       }
     },
+
     id_lapangan: {
       type: DataTypes.UUID,
       allowNull: false,
@@ -27,6 +29,7 @@ const Booking = sequelize.define(
         key: 'id_lapangan'
       }
     },
+
     tanggal: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -34,6 +37,7 @@ const Booking = sequelize.define(
         isDate: true
       }
     },
+
     jam_mulai: {
       type: DataTypes.TIME,
       allowNull: false,
@@ -41,6 +45,7 @@ const Booking = sequelize.define(
         notEmpty: true
       }
     },
+
     jam_selesai: {
       type: DataTypes.TIME,
       allowNull: false,
@@ -48,6 +53,7 @@ const Booking = sequelize.define(
         notEmpty: true
       }
     },
+
     total_harga: {
       type: DataTypes.DECIMAL(12, 2),
       allowNull: false,
@@ -56,22 +62,41 @@ const Booking = sequelize.define(
         min: 0
       }
     },
+
+    // status lapangan
     status: {
       type: DataTypes.ENUM('available', 'booked'),
       defaultValue: 'booked'
     },
+
+    // 🔥 status pembayaran UPGRADE
     status_pembayaran: {
-      type: DataTypes.ENUM('pending', 'paid', 'expired'),
+      type: DataTypes.ENUM(
+        'pending',
+        'waiting_confirmation',
+        'paid',
+        'rejected',
+        'expired'
+      ),
       defaultValue: 'pending'
     },
+
+    // 🔥 bukti transfer
+    bukti_pembayaran: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+
     batas_pembayaran: {
       type: DataTypes.DATE,
       allowNull: false
     },
+
     created_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
     },
+
     updated_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
@@ -84,22 +109,27 @@ const Booking = sequelize.define(
   }
 );
 
-// Hubungan dengan User dan Lapangan
+// ================= RELATION =================
+
+// Booking → User
 Booking.belongsTo(User, {
   foreignKey: 'id_user',
   as: 'user'
 });
 
+// Booking → Lapangan
 Booking.belongsTo(Lapangan, {
   foreignKey: 'id_lapangan',
   as: 'lapangan'
 });
 
+// User → Booking
 User.hasMany(Booking, {
   foreignKey: 'id_user',
   as: 'bookings'
 });
 
+// Lapangan → Booking
 Lapangan.hasMany(Booking, {
   foreignKey: 'id_lapangan',
   as: 'bookings'

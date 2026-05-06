@@ -1,22 +1,22 @@
 const { Booking, Lapangan, User } = require('../models');
 const { Op } = require('sequelize');
 
-// Helper function untuk hitung durasi
+// ================= HELPER =================
+
+// Hitung durasi
 const calculateDuration = (jamMulai, jamSelesai) => {
-  const [hourStart, minStart] = jamMulai.split(':').map(Number);
-  const [hourEnd, minEnd] = jamSelesai.split(':').map(Number);
+  const [h1, m1] = jamMulai.split(':').map(Number);
+  const [h2, m2] = jamSelesai.split(':').map(Number);
 
-  const startMinutes = hourStart * 60 + minStart;
-  const endMinutes = hourEnd * 60 + minEnd;
+  const start = h1 * 60 + m1;
+  const end = h2 * 60 + m2;
 
-  if (endMinutes <= startMinutes) {
-    return null;
-  }
+  if (end <= start) return null;
 
-  return (endMinutes - startMinutes) / 60;
+  return (end - start) / 60;
 };
 
-// 🔥 NEW: hitung harga berdasarkan pagi/malam
+// 🔥 Harga pagi / malam
 const calculateTotalPrice = (jamMulai, jamSelesai, lapangan) => {
   let total = 0;
 
@@ -24,7 +24,7 @@ const calculateTotalPrice = (jamMulai, jamSelesai, lapangan) => {
   let end = parseInt(jamSelesai.split(':')[0]);
 
   for (let hour = start; hour < end; hour++) {
-    if (hour < 18) {
+    if (hour < 16) {
       total += parseFloat(lapangan.harga_pagi);
     } else {
       total += parseFloat(lapangan.harga_malam);
@@ -34,6 +34,8 @@ const calculateTotalPrice = (jamMulai, jamSelesai, lapangan) => {
   return total;
 };
 
+// ================= CREATE BOOKING =================
+
 const createBooking = async (req, res, next) => {
   try {
     const { id_lapangan, tanggal, jam_mulai, jam_selesai } = req.validatedBody;
@@ -41,21 +43,15 @@ const createBooking = async (req, res, next) => {
 
     const lapangan = await Lapangan.findByPk(id_lapangan);
     if (!lapangan) {
-      return res.status(404).json({
-        success: false,
-        message: 'Lapangan tidak ditemukan'
-      });
+      return res.status(404).json({ success: false, message: 'Lapangan tidak ditemukan' });
     }
 
     const duration = calculateDuration(jam_mulai, jam_selesai);
     if (!duration) {
-      return res.status(400).json({
-        success: false,
-        message: 'Jam tidak valid'
-      });
+      return res.status(400).json({ success: false, message: 'Jam tidak valid' });
     }
 
-    // CHECK TABRAKAN JAM
+    // 🔥 CEK TABRAKAN
     const existingBooking = await Booking.findOne({
       where: {
         id_lapangan,
@@ -63,7 +59,7 @@ const createBooking = async (req, res, next) => {
           [Op.gte]: new Date(tanggal),
           [Op.lt]: new Date(new Date(tanggal).getTime() + 86400000)
         },
-        status_pembayaran: { [Op.in]: ['pending', 'paid'] },
+        status_pembayaran: { [Op.in]: ['pending', 'waiting_confirmation', 'paid'] },
         [Op.or]: [
           {
             jam_mulai: { [Op.lte]: jam_mulai },
@@ -88,10 +84,9 @@ const createBooking = async (req, res, next) => {
       });
     }
 
-    // 🔥 PRICE LOGIC BARU
+    // 🔥 HITUNG HARGA
     const rawTotal = calculateTotalPrice(jam_mulai, jam_selesai, lapangan);
-
-    const diskon = lapangan.diskon_persen ? Number(lapangan.diskon_persen) : 0;
+    const diskon = lapangan.diskon_persen || 0;
     const totalHarga = Number((rawTotal * (100 - diskon) / 100).toFixed(2));
 
     const batasPembayaran = new Date(Date.now() + 15 * 60 * 1000);
@@ -115,80 +110,62 @@ const createBooking = async (req, res, next) => {
       message: 'Booking berhasil dibuat',
       data: booking
     });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 };
 
-const getUserBookings = async (req, res, next) => {
-  try {
-    const bookings = await Booking.findAll({
-      where: { id_user: req.user.id_user },
-      include: [
-        {
-          model: Lapangan,
-          as: 'lapangan',
-          attributes: ['id_lapangan', 'nama_lapangan', 'harga_pagi', 'harga_malam']
-        },
-        {
-          model: User,
-          as: 'user',
-          attributes: ['id_user', 'nama', 'email']
-        }
-      ],
-      order: [['tanggal', 'DESC']]
-    });
+// ================= UPLOAD BUKTI =================
 
-    res.json({ success: true, data: bookings });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const getBookingById = async (req, res, next) => {
+const uploadBukti = async (req, res, next) => {
   try {
-    const booking = await Booking.findByPk(req.params.id, {
-      include: [
-        {
-          model: Lapangan,
-          as: 'lapangan',
-          attributes: ['id_lapangan', 'nama_lapangan', 'harga_pagi', 'harga_malam']
-        },
-        {
-          model: User,
-          as: 'user',
-          attributes: ['id_user', 'nama', 'email']
-        }
-      ]
-    });
+    const { id } = req.params;
+
+    const booking = await Booking.findByPk(id);
 
     if (!booking) {
       return res.status(404).json({ success: false, message: 'Booking tidak ditemukan' });
     }
 
-    if (req.user.role !== 'admin' && booking.id_user !== req.user.id_user) {
-      return res.status(403).json({ success: false });
+    if (booking.id_user !== req.user.id_user) {
+      return res.status(403).json({ success: false, message: 'Bukan booking kamu' });
     }
 
-    res.json({ success: true, data: booking });
-  } catch (error) {
-    next(error);
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'Upload gambar dulu' });
+    }
+
+    await booking.update({
+      bukti_pembayaran: req.file.filename,
+      status_pembayaran: 'waiting_confirmation'
+    });
+
+    res.json({
+      success: true,
+      message: 'Menunggu konfirmasi admin',
+      data: {
+        id_booking: booking.id_booking,
+        bukti_pembayaran: booking.bukti_pembayaran,
+        status_pembayaran: booking.status_pembayaran
+      }
+    });
+  } catch (err) {
+    next(err);
   }
 };
 
-const confirmPayment = async (req, res, next) => {
+// ================= ADMIN CONFIRM =================
+
+const confirmByAdmin = async (req, res, next) => {
   try {
-    const booking = await Booking.findByPk(req.params.id, {
+    const { id } = req.params;
+
+    const booking = await Booking.findByPk(id, {
       include: { model: Lapangan, as: 'lapangan' }
     });
 
-    if (!booking) return res.status(404).json({ success: false });
-
-    if (Date.now() > booking.batas_pembayaran.getTime()) {
-      await booking.update({ status_pembayaran: 'expired', status: 'available' });
-      await booking.lapangan.update({ status: 'available' });
-
-      return res.status(400).json({ success: false, message: 'Expired' });
+    if (!booking) {
+      return res.status(404).json({ success: false });
     }
 
     await booking.update({
@@ -196,30 +173,69 @@ const confirmPayment = async (req, res, next) => {
       status: 'booked'
     });
 
-    res.json({ success: true, data: booking });
-  } catch (error) {
-    next(error);
+    res.json({
+      success: true,
+      message: 'Booking dikonfirmasi',
+      data: booking
+    });
+  } catch (err) {
+    next(err);
   }
 };
 
-const cancelBooking = async (req, res, next) => {
+// ================= ADMIN REJECT =================
+
+const rejectBooking = async (req, res, next) => {
   try {
-    const booking = await Booking.findByPk(req.params.id, {
+    const { id } = req.params;
+
+    const booking = await Booking.findByPk(id, {
       include: { model: Lapangan, as: 'lapangan' }
     });
 
-    if (!booking) return res.status(404).json({ success: false });
+    if (!booking) {
+      return res.status(404).json({ success: false });
+    }
 
     await booking.update({
-      status_pembayaran: 'cancelled',
+      status_pembayaran: 'rejected',
       status: 'available'
     });
 
     await booking.lapangan.update({ status: 'available' });
 
-    res.json({ success: true });
-  } catch (error) {
-    next(error);
+    res.json({
+      success: true,
+      message: 'Booking ditolak'
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ================= GET =================
+
+const getUserBookings = async (req, res, next) => {
+  try {
+    const bookings = await Booking.findAll({
+      where: { id_user: req.user.id_user },
+      include: [
+        { model: Lapangan, as: 'lapangan' },
+        { model: User, as: 'user', attributes: ['nama'] }
+      ],
+      order: [['tanggal', 'DESC']]
+    });
+
+    const result = bookings.map(b => ({
+      ...b.toJSON(),
+      bukti_url: b.bukti_pembayaran
+        ? `${req.protocol}://${req.get('host')}/uploads/${b.bukti_pembayaran}`
+        : null
+    }));
+
+    res.json({ success: true, data: result });
+  } catch (err) {
+    next(err);
   }
 };
 
@@ -227,76 +243,72 @@ const getAllBookings = async (req, res, next) => {
   try {
     const bookings = await Booking.findAll({
       include: [
-        {
-          model: Lapangan,
-          as: 'lapangan',
-          attributes: ['id_lapangan', 'nama_lapangan', 'harga_pagi', 'harga_malam']
-        },
-        {
-          model: User,
-          as: 'user',
-          attributes: ['id_user', 'nama', 'email']
-        }
+        { model: Lapangan, as: 'lapangan' },
+        { model: User, as: 'user', attributes: ['nama'] }
       ],
       order: [['tanggal', 'DESC']]
     });
 
-    res.json({ success: true, data: bookings });
-  } catch (error) {
-    next(error);
+    const result = bookings.map(b => ({
+      ...b.toJSON(),
+      bukti_url: b.bukti_pembayaran
+        ? `${req.protocol}://${req.get('host')}/uploads/${b.bukti_pembayaran}`
+        : null
+    }));
+
+    res.json({ success: true, data: result });
+  } catch (err) {
+    next(err);
   }
 };
 
-const checkExpiredBookings = async (req, res, next) => {
+// ================= GET BY ID =================
+
+const getBookingById = async (req, res, next) => {
   try {
-    const expiredBookings = await Booking.findAll({
-      where: {
-        status_pembayaran: 'pending',
-        batas_pembayaran: { [Op.lt]: new Date() }
-      },
-      include: { model: Lapangan, as: 'lapangan' }
+    const { id } = req.params;
+
+    const booking = await Booking.findByPk(id, {
+      include: [
+        { model: Lapangan, as: 'lapangan' },
+        { model: User, as: 'user', attributes: ['nama'] }
+      ]
     });
 
-    for (const b of expiredBookings) {
-      await b.update({ status_pembayaran: 'expired', status: 'available' });
-      await b.lapangan.update({ status: 'available' });
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: 'Booking tidak ditemukan'
+      });
     }
 
-    res.json({ success: true, expired: expiredBookings.length });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const getDailyRevenue = async (req, res, next) => {
-  try {
-    const bookings = await Booking.findAll({
-      where: { status_pembayaran: 'paid' },
-      include: {
-        model: Lapangan,
-        as: 'lapangan',
-        attributes: ['nama_lapangan']
-      }
-    });
-
-    const total = bookings.reduce((sum, b) => sum + parseFloat(b.total_harga), 0);
+    // 🔥 kasih URL bukti
+    const result = {
+      ...booking.toJSON(),
+      bukti_url: booking.bukti_pembayaran
+        ? `${req.protocol}://${req.get('host')}/uploads/${booking.bukti_pembayaran}`
+        : null
+    };
 
     res.json({
       success: true,
-      total_revenue: total
+      data: result
     });
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 };
 
+
+
+// ================= EXPORT =================
+
 module.exports = {
   createBooking,
+  uploadBukti,
+  confirmByAdmin,
+  rejectBooking,
   getUserBookings,
-  getBookingById,
-  confirmPayment,
-  cancelBooking,
   getAllBookings,
-  getDailyRevenue,
-  checkExpiredBookings
+  getBookingById // 🔥 INI YANG TADI KURANG
 };

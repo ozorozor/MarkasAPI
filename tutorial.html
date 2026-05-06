@@ -361,7 +361,7 @@
                         <li><strong>Perhitungan:</strong> Jika booking melewati boundary (12:00), harga akan dihitung proportionally:
                             <ul>
                                 <li>Contoh: Booking 11:00-13:00 dengan harga_pagi=80.000 dan harga_malam=100.000</li>
-                                <li>Harga = (1 jam � 80.000) + (1 jam � 100.000) = 180.000</li>
+                                <li>Harga = (1 jam � 80.000) + (1 jam � 100.000) = 180.000</li>
                             </ul>
                         </li>
                     </ul>
@@ -1445,6 +1445,119 @@ Content-Type: application/json
                     </div>
                 </div>
 
+                <!-- UPLOAD BUKTI PEMBAYARAN -->
+                <div class="endpoint">
+                    <h3>📤 Upload Bukti Pembayaran</h3>
+                    <div class="endpoint-meta">
+                        <span class="method post">POST</span>
+                        <span class="url">/api/booking/:id/upload-bukti</span>
+                        <span class="badge protected">Protected</span>
+                    </div>
+
+                    <p class="description">Upload file bukti transfer setelah booking dibuat. Pastikan hanya user pemilik booking yang dapat mengirimkan bukti pembayaran.</p>
+
+                    <div class="params-section">
+                        <div class="params-title">🔐 Header Requirements</div>
+                        <table class="params-table">
+                            <thead>
+                                <tr>
+                                    <th>Header</th>
+                                    <th>Nilai</th>
+                                    <th>Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>Authorization</code></td>
+                                    <td>Bearer &lt;TOKEN&gt;</td>
+                                    <td>JWT token user yang sudah login</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="params-section">
+                        <div class="params-title">📥 Request Body (Form-Data)</div>
+                        <table class="params-table">
+                            <thead>
+                                <tr>
+                                    <th>Key</th>
+                                    <th>Tipe Data</th>
+                                    <th>Status</th>
+                                    <th>Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>bukti</code></td>
+                                    <td>File</td>
+                                    <td><span class="required">Required</span></td>
+                                    <td>Gambar bukti pembayaran (.jpg / .jpeg / .png)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="info">
+                        <strong>Catatan:</strong> Body harus <code>form-data</code> dan key harus <code>bukti</code>. Jangan set manual <code>Content-Type</code>; biarkan Postman atau client mengaturnya otomatis.
+                    </div>
+
+                    <div class="endpoint-example">
+                        <div class="example-title">📤 Contoh Request (Postman):</div>
+                        <div class="code-block">POST /api/booking/550e8400-e29b-41d4-a716-446655440100/upload-bukti
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+Body: form-data
+- bukti: (file .jpg/.png)</div>
+                    </div>
+
+                    <div class="code-label">✅ Response Success (200 OK):</div>
+                    <div class="success">
+                        <div class="code-block">{
+  "success": true,
+  "message": "Menunggu konfirmasi admin",
+  "data": {
+    "id_booking": "550e8400-e29b-41d4-a716-446655440100",
+    "bukti_pembayaran": "1749999999999.jpg",
+    "status_pembayaran": "waiting_confirmation"
+  }
+}</div>
+                    </div>
+
+                    <div class="code-label">❌ Contoh Response Error:</div>
+                    <div class="error">
+                        <div class="code-block">// Tidak upload file
+{
+  "success": false,
+  "message": "Upload gambar dulu"
+}
+
+// Format file salah
+{
+  "success": false,
+  "message": "File harus berupa gambar"
+}
+
+// Bukan punya user
+{
+  "success": false,
+  "message": "Bukan booking kamu"
+}
+
+// Booking tidak ditemukan
+{
+  "success": false,
+  "message": "Booking tidak ditemukan"
+}</div>
+                    </div>
+
+                    <div class="info">
+                        Setelah upload berhasil, file bisa diakses dari:
+                        <br>
+                        <code>http://localhost:5000/uploads/{filename}</code>
+                    </div>
+                </div>
+
                 <!-- GET USER BOOKINGS -->
                 <div class="endpoint">
                     <h3>1️⃣1️⃣ Get User's Bookings</h3>
@@ -1879,6 +1992,7 @@ PAYMENT_EXPIRY_MINUTES=15</div>
                             <li><strong>GET /api/lapangan</strong> → lihat daftar lapangan & catat ID-nya</li>
                             <li><strong>GET /api/lapangan/availability/check?tanggal=2024-01-20</strong> → cek yang available</li>
                             <li><strong>POST /api/booking</strong> → buat booking baru</li>
+                            <li><strong>POST /api/booking/{id}/upload-bukti</strong> → upload bukti pembayaran</li>
                             <li><strong>PATCH /api/booking/{id}/confirm-payment</strong> → konfirmasi pembayaran</li>
                             <li><strong>GET /api/booking/user/my-bookings</strong> → lihat booking milik user</li>
                         </ol>
