@@ -50,7 +50,7 @@ router.get(
 
 // Confirm booking
 router.patch(
-  '/:id/admin-confirm',
+  '/:id/confirm-payment',
   authenticateToken,
   authorizeRole(['admin']),
   bookingController.confirmByAdmin
