@@ -1,0 +1,234 @@
+### ============================================
+### EMAIL FEATURE - BOOKING CONFIRMATION TESTS
+### ============================================
+
+### Variables
+@baseUrl = http://localhost:5000/api
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+@bookingId = 550e8400-e29b-41d4-a716-446655440000
+
+---
+
+### 1️⃣ CREATE BOOKING (User membuat booking)
+### Status pembayaran: pending
+POST {{baseUrl}}/booking
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
+
+{
+  "id_lapangan": "uuid-lapangan-123",
+  "tanggal": "2024-07-20",
+  "jam_mulai": "09:00",
+  "jam_selesai": "11:00"
+}
+
+### Response:
+### {
+###   "success": true,
+###   "message": "Booking berhasil dibuat",
+###   "data": {
+###     "id_booking": "550e8400-e29b-41d4-a716-446655440000",
+###     "status_pembayaran": "pending",
+###     "total_harga": 150000,
+###     ...
+###   }
+### }
+
+---
+
+### 2️⃣ UPLOAD BUKTI PEMBAYARAN (User upload bukti)
+### Status pembayaran: waiting_confirmation
+POST {{baseUrl}}/booking/550e8400-e29b-41d4-a716-446655440000/upload-bukti
+Content-Type: multipart/form-data
+Authorization: Bearer {{userToken}}
+
+--boundary
+Content-Disposition: form-data; name="bukti"; filename="transfer.jpg"
+
+< ./uploads/bukti/transfer.jpg
+--boundary--
+
+### Response:
+### {
+###   "success": true,
+###   "message": "Menunggu konfirmasi admin",
+###   "data": {
+###     "id_booking": "550e8400-e29b-41d4-a716-446655440000",
+###     "bukti_pembayaran": "transfer.jpg",
+###     "status_pembayaran": "waiting_confirmation"
+###   }
+### }
+
+---
+
+### 3️⃣ ⭐ ADMIN CONFIRM PAYMENT (dengan EMAIL)
+### Status pembayaran: paid
+### ✉️ EMAIL DIKIRIM KE USER!
+PATCH {{baseUrl}}/booking/550e8400-e29b-41d4-a716-446655440000/confirm-payment
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{}
+
+### Response:
+### {
+###   "success": true,
+###   "message": "Booking dikonfirmasi dan email dikirim ke user",
+###   "data": {
+###     "id_booking": "550e8400-e29b-41d4-a716-446655440000",
+###     "status_pembayaran": "paid",
+###     "status": "booked",
+###     "id_user": "user-uuid",
+###     "id_lapangan": "lapangan-uuid",
+###     "tanggal": "2024-07-20T00:00:00.000Z",
+###     "jam_mulai": "09:00:00",
+###     "jam_selesai": "11:00:00",
+###     "total_harga": 150000,
+###     ...
+###   }
+### }
+
+### ✉️ EMAIL YANG DIKIRIM:
+### To: ahmad@example.com
+### Subject: 🎉 Booking Lapangan Dikonfirmasi - Lapangan Indoor
+###
+### Halo Ahmad,
+### 
+### Selamat! Booking lapangan Anda telah berhasil dikonfirmasi oleh admin.
+### Anda sekarang dapat menggunakan lapangan yang telah Anda pesan.
+###
+### Detail Booking:
+### - Lapangan: Lapangan Indoor
+### - Tanggal: Minggu, 20 Juli 2024
+### - Jam: 09:00 - 11:00
+### - Total: Rp 150.000
+###
+### Penting:
+### - Hadir 15 menit sebelum waktu yang dijadwalkan
+### - Bawa identitas atau booking confirmation ini
+### - Jika ingin membatalkan, hubungi admin sebelum 24 jam
+
+---
+
+### 4️⃣ ALTERNATIVE: ADMIN REJECT PAYMENT (dengan EMAIL)
+### Status pembayaran: rejected
+### ✉️ EMAIL PENOLAKAN DIKIRIM KE USER!
+PATCH {{baseUrl}}/booking/550e8400-e29b-41d4-a716-446655440000/reject
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "reason": "Bukti pembayaran tidak sesuai dengan nominal booking"
+}
+
+### Response:
+### {
+###   "success": true,
+###   "message": "Booking ditolak dan email dikirim ke user"
+### }
+
+### ✉️ EMAIL YANG DIKIRIM:
+### To: ahmad@example.com
+### Subject: Booking Lapangan Ditolak - Lapangan Indoor
+###
+### Halo Ahmad,
+###
+### Mohon maaf, booking lapangan Anda telah ditolak oleh admin.
+###
+### Detail Booking:
+### - Lapangan: Lapangan Indoor
+### - Tanggal: Minggu, 20 Juli 2024
+### - Jam: 09:00 - 11:00
+### - Alasan: Bukti pembayaran tidak sesuai dengan nominal booking
+###
+### Anda dapat melakukan booking ulang untuk tanggal dan jam yang berbeda.
+
+---
+
+### 5️⃣ GET BOOKING BY ID (verify status setelah confirm)
+GET {{baseUrl}}/booking/550e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
+
+### Response:
+### {
+###   "success": true,
+###   "data": {
+###     "id_booking": "550e8400-e29b-41d4-a716-446655440000",
+###     "status_pembayaran": "paid",
+###     "status": "booked",
+###     "bukti_url": "http://localhost:5000/uploads/transfer.jpg",
+###     ...
+###   }
+### }
+
+---
+
+### 6️⃣ GET ALL BOOKINGS (Admin melihat semua booking)
+GET {{baseUrl}}/booking
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+### Response:
+### {
+###   "success": true,
+###   "data": [
+###     {
+###       "id_booking": "550e8400-e29b-41d4-a716-446655440000",
+###       "status_pembayaran": "paid",
+###       "status": "booked",
+###       "bukti_url": "http://localhost:5000/uploads/transfer.jpg",
+###       ...
+###     },
+###     ...
+###   ]
+### }
+
+---
+
+### 📋 NOTES:
+
+### EMAIL REQUIREMENTS:
+### 1. .env harus dikonfigurasi dengan:
+###    - EMAIL_SERVICE=gmail
+###    - EMAIL_USER=your_email@gmail.com
+###    - EMAIL_PASSWORD=your_app_password
+###    - EMAIL_FROM=Markas Lapangan <noreply@markaslapangan.com>
+###
+### 2. Untuk Gmail:
+###    - Enable 2-Step Verification
+###    - Generate App Password (16 karakter)
+###    - Masukkan ke EMAIL_PASSWORD di .env
+###
+### 3. User harus memiliki email valid di database
+
+### STATUS PEMBAYARAN FLOW:
+### pending → waiting_confirmation → paid (confirmed)
+###                              ↘ rejected (rejected)
+
+### AVAILABLE STATUS:
+### ✅ pending
+### ✅ waiting_confirmation
+### ✅ paid (setelah dikonfirmasi admin)
+### ✅ rejected (setelah ditolak admin)
+
+---
+
+### 🔧 TIPS TESTING:
+
+### Jika using Postman:
+### 1. Create environment dengan variables:
+###    - baseUrl = http://localhost:5000/api
+###    - adminToken = [copy dari login admin]
+###    - userToken = [copy dari login user]
+###    - bookingId = [copy dari create booking response]
+###
+### 2. Jalankan requests secara berurutan (1 → 2 → 3)
+###
+### 3. Cek email user (Gmail/Mailtrap) setelah step 3
+
+### Testing dengan cURL:
+### curl -X PATCH http://localhost:5000/api/booking/{id}/confirm-payment \
+###   -H "Authorization: Bearer {token}" \
+###   -H "Content-Type: application/json"
+

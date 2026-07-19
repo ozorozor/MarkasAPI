@@ -1,5 +1,6 @@
 const { Booking, Lapangan, User } = require('../models');
 const { Op } = require('sequelize');
+const { sendBookingConfirmation, sendBookingRejection } = require('../utils/emailService');
 
 // ================= HELPER =================
 
@@ -161,21 +162,44 @@ const confirmByAdmin = async (req, res, next) => {
     const { id } = req.params;
 
     const booking = await Booking.findByPk(id, {
-      include: { model: Lapangan, as: 'lapangan' }
+      include: [
+        { model: Lapangan, as: 'lapangan' },
+        { model: User, as: 'user' }
+      ]
     });
 
     if (!booking) {
-      return res.status(404).json({ success: false });
+      return res.status(404).json({
+        success: false,
+        message: 'Booking tidak ditemukan'
+      });
     }
 
+    // ✅ CEK STATUS PEMBAYARAN HARUS PENDING/WAITING_CONFIRMATION
+    if (!['pending', 'waiting_confirmation'].includes(booking.status_pembayaran)) {
+      return res.status(400).json({
+        success: false,
+        message: `Booking tidak bisa dikonfirmasi, status saat ini: ${booking.status_pembayaran}`
+      });
+    }
+
+    // ✅ UPDATE DATABASE
     await booking.update({
       status_pembayaran: 'paid',
       status: 'booked'
     });
 
+    // ✅ KIRIM EMAIL CONFIRMATION
+    try {
+      await sendBookingConfirmation(booking.user, booking, booking.lapangan);
+    } catch (emailError) {
+      console.warn('Email gagal dikirim, tapi booking tetap dikonfirmasi:', emailError.message);
+      // Jangan throw error, biarkan response tetap dikirim
+    }
+
     res.json({
       success: true,
-      message: 'Booking dikonfirmasi',
+      message: 'Booking dikonfirmasi dan email dikirim ke user',
       data: booking
     });
   } catch (err) {
@@ -188,15 +212,31 @@ const confirmByAdmin = async (req, res, next) => {
 const rejectBooking = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const { reason } = req.body; // Optional: reason untuk penolakan
 
     const booking = await Booking.findByPk(id, {
-      include: { model: Lapangan, as: 'lapangan' }
+      include: [
+        { model: Lapangan, as: 'lapangan' },
+        { model: User, as: 'user' }
+      ]
     });
 
     if (!booking) {
-      return res.status(404).json({ success: false });
+      return res.status(404).json({
+        success: false,
+        message: 'Booking tidak ditemukan'
+      });
     }
 
+    // ✅ CEK STATUS PEMBAYARAN HARUS WAITING_CONFIRMATION
+    if (booking.status_pembayaran !== 'waiting_confirmation') {
+      return res.status(400).json({
+        success: false,
+        message: `Booking tidak bisa ditolak, status saat ini: ${booking.status_pembayaran}`
+      });
+    }
+
+    // ✅ UPDATE DATABASE
     await booking.update({
       status_pembayaran: 'rejected',
       status: 'available'
@@ -204,9 +244,17 @@ const rejectBooking = async (req, res, next) => {
 
     await booking.lapangan.update({ status: 'available' });
 
+    // ✅ KIRIM EMAIL REJECTION
+    try {
+      await sendBookingRejection(booking.user, booking, booking.lapangan, reason);
+    } catch (emailError) {
+      console.warn('Email gagal dikirim, tapi booking tetap ditolak:', emailError.message);
+      // Jangan throw error, biarkan response tetap dikirim
+    }
+
     res.json({
       success: true,
-      message: 'Booking ditolak'
+      message: 'Booking ditolak dan email dikirim ke user'
     });
   } catch (err) {
     next(err);
